@@ -1,0 +1,29 @@
+{
+  "name": "data_visualization",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "d3": "^7.7.0",
+    "debug": "~2.6.9",
+    "ejs": "^3.1.8",
+    "express": "^4.18.2",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "mysql": "^2.18.1"
+  },
+  "description": "- code\r   - `css/`\r   - `fonts/`\r   - `img/`\r   - `js/`\r   - `*.html`\r   - `index.html` main page\r - original template\r   - `template/`\r - pictures\r   - `doc_pics/`",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git@gitee.com:zhouanqiNB/data_visualization.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "2.8.1"
+  }
+}

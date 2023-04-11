@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Arise Admin Dashboard" />
+  <meta name="keywords"
+        content="Admin, Dashboard, Bootstrap3, Sass, transform, CSS3, HTML5, Web design, UI Design, Responsive Dashboard, Responsive Admin, Admin Theme, Best Admin UI, Bootstrap Theme, Themeforest, Bootstrap, C3 Graphs, D3 Graphs, NVD3 Graphs, Admin Skin, Black Admin Dashboard, Grey Admin Dashboard, Dark Admin Dashboard, Simple Admin Dashboard, Simple Admin Theme, Simple Bootstrap Dashboard, Invoice, Tasks, Profile" />
+  <meta name="author" content="Ramji" />
+  <link rel="shortcut icon" href="img/fav.png">
+  <title>b站视频数据分析</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />
+
+  <!-- Main CSS -->
+  <link href="css/main.css" rel="stylesheet" media="screen" />
+
+  <!-- Ion Icons -->
+  <link href="fonts/icomoon/icomoon.css" rel="stylesheet" />
+
+  <!-- C3 CSS -->
+  <link href="css/c3/c3.css" rel="stylesheet" />
+
+  <!-- NVD3 CSS -->
+  <link href="css/nvd3/nv.d3.css" rel="stylesheet" />
+
+  <!-- Horizontal bar CSS -->
+  <link href="css/horizontal-bar/chart.css" rel="stylesheet" />
+
+  <!-- Calendar Heatmap CSS -->
+  <link href="css/heatmap/cal-heatmap.css" rel="stylesheet" />
+
+  <!-- Circliful CSS -->
+  <link rel="stylesheet" href="css/circliful/circliful.css" />
+
+  <!-- OdoMeter CSS -->
+  <link rel="stylesheet" href="css/odometer.css" />
+
+  <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <script src="js/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+
+<body>
+
+<!-- Loading starts -->
+<div class="loading-wrapper">
+  <div class="loading">
+    <h5>Loading...</h5>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<!-- Loading ends -->
+
+<!-- Header starts -->
+<header>
+
+  <form action="https://search.bilibili.com/">
+    <div class="custom-search hidden-sm hidden-xs">
+      <input type="text" name="keyword" class="search-query" placeholder="Search here ...">
+      <i class="icon-search3"></i>
+    </div>
+  </form>
+
+</header>
+<!-- Header ends -->
+
+<!-- Left sidebar start -->
+<div class="vertical-nav vertical-nav-sm">
+
+  <!-- Collapse menu starts -->
+  <button class="collapse-menu">
+    <i class="icon-menu2"></i>
+  </button>
+  <!-- Collapse menu ends -->
+
+  <!-- Sidebar menu start -->
+  <ul class="menu clearfix">
+    <!-- 主页 -->
+    <li class="active selected">
+      <a href="#">
+        <i class="icon-air-play"></i>
+        <span class="menu-item">主页</span>
+      </a>
+    </li>
+    <!-- 主页 -->
+
+    <!-- up主概览 -->
+    <li>
+      <a href="#">
+        <i class="icon-smiling-face"></i>
+        <span class="menu-item">up主概览</span>
+        <span class="down-arrow"></span>
+      </a>
+      <ul>
+        <li>
+          <a href='fans_increase'>涨粉排行榜</a>
+        </li>
+        <li>
+          <a href='fans_decrease'>掉粉排行榜</a>
+        </li>
+        <li>
+          <a href='fans_portrait'>粉丝画像</a>
+        </li>
+      </ul>
+    </li>
+    <!-- up主概览 -->
+
+    <!-- 热门视频概览 -->
+    <li>
+      <a href="#">
+        <i class="icon-chart5"></i>
+        <span class="menu-item">热门视频概览</span>
+        <span class="down-arrow"></span>
+      </a>
+      <ul>
+        <li>
+          <a href='overall_data'>整体数据</a>
+        </li>
+      </ul>
+    </li>
+    <!-- 热门视频概览 -->
+  </ul>
+  <!-- Sidebar menu snd -->
+</div>
+<!-- Left sidebar end -->
+
+<!-- Dashboard Wrapper Start -->
+<div class="dashboard-wrapper">
+
+  <!-- Container fluid Starts -->
+  <div class="container-fluid">
+
+    <!-- Top Bar Starts -->
+    <div class="top-bar clearfix">
+      <div class="row gutter">
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+          <div class="page-title">
+            <h3>主页</h3>
+            <p>队伍信息 / 实验报告</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Top Bar Ends -->
+
+    <!-- Row starts -->
+    <div class="row gutter">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="panel height2">
+          <div class="panel-heading">
+            <h4>小组选题</h4>
+          </div>
+          <div class="panel-body">
+            <p>TODO</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Row ends -->
+
+    <!-- Row starts -->
+    <div class="row gutter">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="panel height2">
+          <div class="panel-heading">
+            <h4>小组分工</h4>
+          </div>
+          <div class="panel-body">
+            <p>TODO</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Row ends -->
+
+    <!-- Row starts -->
+    <div class="row gutter">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="panel height2">
+          <div class="panel-heading">
+            <h4>主要模块</h4>
+          </div>
+          <div class="panel-body">
+            <p>TODO</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Row ends -->
+
+
+  </div>
+  <!-- Container fluid ends -->
+
+</div>
+<!-- Dashboard Wrapper End -->
+
+<!-- Footer Start -->
+<footer>
+  Copyright <a href="https://gitee.com/zhouanqiNB/data_visualization">你说对就队</a> <span>gitee</span>
+</footer>
+<!-- Footer end -->
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="js/jquery.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="js/bootstrap.min.js"></script>
+
+<!-- Sparkline Graphs -->
+<!-- <script src="js/sparkline/sparkline.js"></script> -->
+<script src="js/sparkline/retina.js"></script>
+<script src="js/sparkline/custom-sparkline.js"></script>
+
+<!-- jquery ScrollUp JS -->
+<script src="js/scrollup/jquery.scrollUp.js"></script>
+
+<!-- D3 JS -->
+<script src="js/d3/d3.v3.min.js"></script>
+<script src="js/d3/d3.powergauge.js"></script>
+
+<!-- C3 Graphs -->
+<script src="js/c3/c3.min.js"></script>
+<script src="js/c3/c3.custom.js"></script>
+
+<!-- NVD3 JS -->
+<script src="js/nvd3/nv.d3.js"></script>
+<script src="js/nvd3/nv.d3.custom.boxPlotChart.js"></script>
+
+<!-- Horizontal Bar JS -->
+<script src="js/horizontal-bar/horizBarChart.min.js"></script>
+<script src="js/horizontal-bar/horizBarCustom.js"></script>
+
+<!-- Gauge Meter JS -->
+<script src="js/gaugemeter/gaugeMeter-2.0.0.min.js"></script>
+<script src="js/gaugemeter/gaugemeter.custom.js"></script>
+
+<!-- Calendar Heatmap JS -->
+<script src="js/heatmap/cal-heatmap.min.js"></script>
+<script src="js/heatmap/cal-heatmap.custom.js"></script>
+
+<!-- Odometer JS -->
+<script src="js/odometer/odometer.min.js"></script>
+<script src="js/odometer/custom-odometer.js"></script>
+
+<!-- Peity JS -->
+<script src="js/peity/peity.min.js"></script>
+<script src="js/peity/custom-peity.js"></script>
+
+<!-- Circliful js -->
+<script src="js/circliful/circliful.min.js"></script>
+<script src="js/circliful/circliful.custom.js"></script>
+
+<!-- Custom JS -->
+<script src="js/custom.js"></script>
+</body>
+
+</html>
