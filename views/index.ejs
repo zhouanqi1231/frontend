@@ -1,160 +1,141 @@
 <!DOCTYPE html>
-<html lang = "en">
+<html lang="en">
+
 <head>
-    <meta charset = "UTF-8">
-    <title>main</title>
+  <meta charset="UTF-8">
+  <title>main</title>
 </head>
+
 <body>
 
-<canvas id = "network" width = "1000" height = "1000"></canvas>
+  <canvas id="network" width="1000" height="1000"></canvas>
 
-<script src = "https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
 
-<script>
+  <script>
 
-  // const url = "http://127.0.0.1:5000/query_all"
-  // const params = {
-  //   headers:{
-  //     "content-type":"application/json;charset = UTF-8"
-  //   },
-  //   method:"GET"
-  // }
-  // fetch(url,params)
-  //   .then(data = >{return data.json()})
-  //   .then(res = >{console.log(res)});
+    // get json response from backend
+    const httpRequest = new XMLHttpRequest();
+    httpRequest.open('GET', 'http://127.0.0.1:5000/query_all', true);
+    httpRequest.send();
 
+    // 接受到response之后，右侧函数被回调
+    httpRequest.onreadystatechange = function () {
+      let queryAllResJson;
+      if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+        const queryAllRes = httpRequest.responseText;// 获取到json字符串
+        queryAllResJson = JSON.parse(queryAllRes);
+        console.log(queryAllResJson);
+      } else { return; }
 
-  /* small data */
-  // var graph = {
-  //   nodes:[
-  //     {name:"apple",age:36 },
-  //     {name:"mmaa",age:36 },
-  //     {name:"papa",age:36 },
-  //     {name:"dada",age:36 },
-  //     {name:"people",age:36 },
-  //     {name:"happy",age:36 },
-  //   ],
-  //   links:[
-  //     {source:"apple",target:"mmaa"},
-  //     {source:"apple",target:"papa"},
-  //     {source:"papa",target:"people"},
-  //     {source:"happy",target:"people"},
-  //     {source:"happy",target:"mmaa"},
-  //     {source:"apple",target:"dada"},
-  //   ]
-  // };
-
-  // generate random start point{x,y} for each node
-  // graph.nodes.forEach(function(d){
-  //   d.x = Math.random()*width;
-  //   d.y = Math.random()*height;
-  // })
-  const canvas = d3.select("#network"),
-    width = canvas.attr("width"),
-    height = canvas.attr("height"),
-    // radius of node
-    r = 3,
-    // color pattern
-    color = d3.scaleOrdinal(d3.schemeCategory20),
-    ctx = canvas.node().getContext("2d"),
-    // force simulation
-    // nodes don't collide, 参数定义的是两个圆心之间的距离
-    // charge means斥力
-    // tell forceLink how to find the node
-    simulation = d3.forceSimulation()
-      .force("x", d3.forceX(width / 2))
-      .force("y", d3.forceY(height / 2))
-      .force("collide", d3.forceCollide(r + 5))
-      .force("charge", d3.forceManyBody()
-        .strength(-20))
-      .force("link", d3.forceLink()
-        .id(function(d) {
-          return d.node_id;
-        }));
+      const canvas = d3.select("#network"),
+        width = canvas.attr("width"),
+        height = canvas.attr("height"),
+        // radius of node
+        r = 3,
+        // color pattern
+        color = d3.scaleOrdinal(d3.schemeCategory20),
+        ctx = canvas.node().getContext("2d"),
+        // force simulation
+        // nodes don't collide, 参数定义的是两个圆心之间的距离
+        // charge means斥力
+        // tell forceLink how to find the node
+        simulation = d3.forceSimulation()
+          .force("x", d3.forceX(width / 2))
+          .force("y", d3.forceY(height / 2))
+          .force("collide", d3.forceCollide(r + 5))
+          .force("charge", d3.forceManyBody()
+            .strength(-20))
+          .force("link", d3.forceLink()
+            .id(function (d) {
+              return d.node_id;
+            }));
 
 
-  d3.json("a.json",function(err,graph){
-    if (err) throw err;
+      d3.json("a.json", function (err, graph) {
+        if (err) throw err;
 
-    simulation
-      .nodes(graph.nodes)
-      .on("tick",update)
-      .force("link")
-      .links(graph.links);
-
-
-    canvas
-      .call(d3.drag()
-        .container(canvas.node())
-        .subject(dragSubject)
-        .on("start",dragStarted)
-        .on("drag",dragged)
-        .on("end",dragEnded));
-
-    update();
+        simulation
+          .nodes(graph.nodes)
+          .on("tick", update)
+          .force("link")
+          .links(graph.links);
 
 
-    function update(){
-      // clear canvas
-      ctx.clearRect(0,0,width,height);
+        canvas
+          .call(d3.drag()
+            .container(canvas.node())
+            .subject(dragSubject)
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded));
 
-      graph.links.forEach(drawLink);
-      graph.nodes.forEach(drawNode);
-    }
+        update();
 
-    function dragSubject(){
-      return simulation.find(d3.event.x,d3.event.y);
-    }
-  });
 
-  // draw nodes and links
-  function drawNode(d){
-    ctx.beginPath();
-    ctx.globalAlpha = 1.0
-    ctx.fillStyle = color(d.label);
-    // ctx.fillOpacity = 0.8;
-    ctx.moveTo(d.x,d.y);
-    ctx.arc(d.x,d.y,r,0,2*Math.PI);
-    ctx.fill();
+        function update() {
+          // clear canvas
+          ctx.clearRect(0, 0, width, height);
 
-    // 这是为啥啊也不知道为啥那一圈就画上去了
-    ctx.beginPath();
-    ctx.moveTo(d.x+r,d.y);
-    ctx.arc(d.x,d.y,r,0,2*Math.PI);
-    ctx.strokeStyle = "#000"
-    ctx.stroke();
-  }
+          graph.links.forEach(drawLink);
+          graph.nodes.forEach(drawNode);
+        }
 
-  function drawLink(l){
-    ctx.beginPath();
-    // ctx.globalAlpha = 0.1
-    // color
-    ctx.strokeStyle = "#000"
-    // 透明度
-    // ctx.strokeOpacity = 0.6
-    // ctx.strokeLinecap = "round"
-    ctx.moveTo(l.source.x,l.source.y);
-    ctx.lineTo(l.target.x,l.target.y);
-    ctx.stroke();
-  }
+        function dragSubject() {
+          return simulation.find(d3.event.x, d3.event.y);
+        }
+      });
 
-  // drag event
-  function  dragStarted(){
-    if(!d3.event.active) simulation.alphaTarget(0.3).restart();
-    d3.event.subject.fx = d3.event.subject.x;
-    d3.event.subject.fy = d3.event.subject.y;
-    console.log(d3.event.subject);
-  }
+      // draw nodes and links
+      function drawNode(d) {
+        ctx.beginPath();
+        ctx.globalAlpha = 1.0
+        ctx.fillStyle = color(d.label);
+        // ctx.fillOpacity = 0.8;
+        ctx.moveTo(d.x, d.y);
+        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
+        ctx.fill();
 
-  function dragged(){
-    d3.event.subject.fx = d3.event.x;
-    d3.event.subject.fy = d3.event.y;
-  }
+        // 这是为啥啊也不知道为啥那一圈就画上去了
+        ctx.beginPath();
+        ctx.moveTo(d.x + r, d.y);
+        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#000"
+        ctx.stroke();
+      }
 
-  function  dragEnded(){
-    if(!d3.event.active) simulation.alphaTarget(0);
-    d3.event.subject.fx = null;
-    d3.event.subject.fy = null;
-  }
+      function drawLink(l) {
+        ctx.beginPath();
+        // ctx.globalAlpha = 0.1
+        // color
+        ctx.strokeStyle = "#000"
+        // 透明度
+        // ctx.strokeOpacity = 0.6
+        // ctx.strokeLinecap = "round"
+        ctx.moveTo(l.source.x, l.source.y);
+        ctx.lineTo(l.target.x, l.target.y);
+        ctx.stroke();
+      }
 
-</script>
+      // drag event
+      function dragStarted() {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d3.event.subject.fx = d3.event.subject.x;
+        d3.event.subject.fy = d3.event.subject.y;
+        console.log(d3.event.subject);
+      }
+
+      function dragged() {
+        d3.event.subject.fx = d3.event.x;
+        d3.event.subject.fy = d3.event.y;
+      }
+
+      function dragEnded() {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d3.event.subject.fx = null;
+        d3.event.subject.fy = null;
+      }
+    };
+
+
+  </script>
