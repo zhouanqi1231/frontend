@@ -9,9 +9,7 @@
 <body>
 
   <canvas id="network" width="1000" height="1000"></canvas>
-
   <script src="https://d3js.org/d3.v4.min.js"></script>
-
   <script>
 
     // get json response from backend
@@ -19,13 +17,15 @@
     httpRequest.open('GET', 'http://127.0.0.1:5000/query_all', true);
     httpRequest.send();
 
-    // 接受到response之后，右侧函数被回调
+    // 接受到response之后（左侧变量发生改变），右侧函数被回调
     httpRequest.onreadystatechange = function () {
-      let queryAllResJson;
+      // store response json
+      let graph;
       if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-        const queryAllRes = httpRequest.responseText;// 获取到json字符串
-        queryAllResJson = JSON.parse(queryAllRes);
-        console.log(queryAllResJson);
+        // get response (json but in string)
+        const queryAllRes = httpRequest.responseText;
+        graph = JSON.parse(queryAllRes);
+        console.log(graph);
       } else { return; }
 
       const canvas = d3.select("#network"),
@@ -36,9 +36,9 @@
         // color pattern
         color = d3.scaleOrdinal(d3.schemeCategory20),
         ctx = canvas.node().getContext("2d"),
-        // force simulation
+        // **force simulation**
         // nodes don't collide, 参数定义的是两个圆心之间的距离
-        // charge means斥力
+        // charge means 斥力
         // tell forceLink how to find the node
         simulation = d3.forceSimulation()
           .force("x", d3.forceX(width / 2))
