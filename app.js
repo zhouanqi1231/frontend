@@ -6,6 +6,7 @@ var logger = require("morgan");
 
 // 导入相应的`.js`文件 ===============================
 var indexRouter = require("./routes/index");
+var testRouter = require("./routes/test");
 // 导入相应的`.js`文件 ===============================
 
 var app = express();
@@ -23,6 +24,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // 路由和文件一一对应 ================================
 app.use("/", indexRouter);
 app.use("/index", indexRouter);
+app.use("/test", testRouter);
 // 路由和文件一一对应 ================================
 
 // catch 404 and forward to error handler
