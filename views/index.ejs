@@ -16,7 +16,7 @@
     canvas {
       /*width: 100%;*/
       display: block;
-      background: #000000;
+      background: #ffffff;
     }
   </style>
 </head>
@@ -50,28 +50,18 @@
         // radius of node
         r = 3,
         // color pattern
-        color = d3.scaleOrdinal([
-          '#6bc3ff',
-          '#ffbb7e',
-          '#9aff9a',
-          '#ff8c8c',
-          '#d1aaff',
-          '#a0e6ff',
-          '#e3d177',
-          '#99ffcc',
-          '#ff99d3',
-          '#d6ff98']),
+       color = d3.scaleOrdinal([
+        '#3e9de0',
+        '#8b4cf8',
+        '#62ff62',
+        '#ff4f4f',
+        '#aa5fff',
+        '#49ceff',
+        '#ffe35e',
+        '#56ffa9',
+        '#ff55b6',
+        '#abe758']);
 
-              // '#d6efff',
-              // '#ffe4c9',
-              // '#d1ffd1',
-              // '#ffc6c6',
-              // '#dfc5ff',
-              // '#caf2ff',
-              // '#fff4c3',
-              // '#b6ffdc',
-              // '#ffbde2',
-              // '#e3ffb9']),
         ctx = canvas.node().getContext("2d"),
         // **force simulation**
         // nodes don't collide, 参数定义的是两个圆心之间的距离
@@ -122,24 +112,25 @@
         ctx.fillStyle = color(d.label);
         // ctx.fillOpacity = 0.8;
         ctx.moveTo(d.x, d.y);
-        ctx.arc(d.x, d.y, Math.log(d.value)+2, 0, 2 * Math.PI);
+        ctx.arc(d.x, d.y, Math.log(d.value)+4, 0, 2 * Math.PI);
         ctx.fill();
 
-        // node外围的线
+        // node外围的线，刚好是半透明，画在节点外围。
         ctx.beginPath();
-        ctx.globalAlpha=0.1;
-        ctx.moveTo(d.x + Math.log(d.value)+2, d.y);
-        ctx.arc(d.x, d.y, Math.log(d.value)+2, 0, 2 * Math.PI);
-        ctx.strokeStyle = "#fff"
+        ctx.globalAlpha=0.3;
+        // ctx.globalAlpha=1;
+        ctx.moveTo(d.x + Math.log(d.value)+4, d.y);
+        ctx.arc(d.x, d.y, Math.log(d.value)+3.5, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#06293f"
         ctx.stroke();
       }
 
       function drawLink(l) {
         ctx.beginPath();
-        ctx.globalAlpha = 0.1;
+        ctx.globalAlpha = 0.3;
         // ctx.globalAlpha = 1.0;
         // color
-        ctx.strokeStyle = "#fff";
+        ctx.strokeStyle = "#06293f";
         // 透明度
         // ctx.strokeOpacity = 1;
         // ctx.strokeLinecap = "round";
