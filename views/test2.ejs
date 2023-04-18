@@ -1,0 +1,57 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>点击文字弹出一个DIV层窗口代码</title>
+  <style>
+    .info_panel {
+      display: block;
+      position: absolute;
+      top: 23%;
+      left: 70%;
+      width: 22%;
+      height: 45%;
+      padding: 15px;
+      border: 1px solid rgb(167, 167, 167);
+      border-radius: 24px;
+      background-color: rgb(233, 233, 233);
+      z-index: 1002;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <p>示例弹出层：<a href="JavaScript:void(0)" onclick="openDialog()">请点这里</a></p>
+
+  <div id="info_panel" class="info_panel">
+    <table>
+      <tr>
+        <td>fffff</td>
+        <td>dddddd</td>
+      </tr>
+      <tr>
+        <td>fffff</td>
+        <td>dddddd</td>
+      </tr>
+      <tr>
+        <td>fffff</td>
+        <td>dddddd</td>
+      </tr>
+    </table>
+    <a href="javascript:void(0)" onclick="closeDialog()">点这里关闭本窗口</a>
+  </div>
+  <div id="fade" class="black_overlay"></div>
+</body>
+
+<script type="text/javascript">
+  function openDialog() {
+    document.getElementById('info_panel').style.display = 'block';
+  }
+
+  function closeDialog() {
+    document.getElementById('info_panel').style.display = 'none';
+  }
+</script>
+
+</html>
