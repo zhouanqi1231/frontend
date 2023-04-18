@@ -2,163 +2,176 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>test</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        html, body {
-            height: 100%;
-            width: 100%;
-        }
-        canvas {
-            /*width: 100%;*/
-            display: block;
-            background: #ffffff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+    }
+
+    canvas {
+      /*width: 100%;*/
+      display: block;
+      background: #ffffff;
+    }
+  </style>
 </head>
 
 <body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
 
-<script>
+  <script>
+    // 从后端拿数据
+    const httpRequest = new XMLHttpRequest();
+    httpRequest.open('GET', 'http://127.0.0.1:5000/query_all', true);
+    httpRequest.send();
 
-  // 从后端拿数据
-  const httpRequest = new XMLHttpRequest();
-  httpRequest.open('GET', 'http://127.0.0.1:5000/query_all', true);
-  httpRequest.send();
+    // 接到response之后再作画
+    httpRequest.onreadystatechange = function() {
 
-  // 接到response之后再作画
-  httpRequest.onreadystatechange = function () {
-
-    // get response data
-    let graph;
-    if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-      const queryAllRes = httpRequest.responseText;
-      graph = JSON.parse(queryAllRes);
-      console.log(graph);
-    } else { return; }
-
-    // 创造一个canvas，大小自适应浏览器窗口
-    var canvas = document.createElement("canvas");
-    canvas.setAttribute("width", window.innerWidth);
-    canvas.setAttribute("height", window.innerHeight);
-    canvas.setAttribute("id", "network");
-    document.body.appendChild(canvas);
-
-    console.log(canvas.width);
-    console.log(canvas.height);
-
-    // 创建scene类实现canvas拖动和放缩
-    class Scene {
-      offset = { x: 0, y: 0 }; // 拖动偏移
-      curOffset = { x: 0, y: 0 }; // 已有偏移
-      mousePosition = { x: 0, y: 0 }; // 鼠标滚轮点击时的坐标位置
-      maxScale = 8;
-      minScale = 0.4;
-      scaleStep = 0.2;
-      scale = 1;
-      preScale = 1;
-
-      x = 0; // 记录鼠标点击Canvas时的横坐标
-      y = 0; // 记录鼠标点击Canvas时的纵坐标
-
-      constructor(id) {
-        // basic
-        this.canvas = document.querySelector('#' + id)
-        this.width = canvas.width;
-        this.height = canvas.height;
-        this.canvas.width = canvas.width;
-        this.canvas.height = canvas.height;
-        // this.width = 2000;
-        // this.height = 2000;
-        // this.canvas.width = 2000;
-        // this.canvas.height = 2000;
-        this.ctx = this.canvas.getContext('2d');
-
-        // 设置拖动和放缩
-        this.onMousedown = this.onMousedown.bind(this);
-        this.onMousemove = this.onMousemove.bind(this);
-        this.onMouseup = this.onMouseup.bind(this);
-        this.onMousewheel = this.onMousewheel.bind(this);
-        this.canvas.addEventListener('mousewheel', this.onMousewheel);
-        this.canvas.addEventListener('mousedown', this.onMousedown);
+      // get response data
+      let graph;
+      if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+        const queryAllRes = httpRequest.responseText;
+        graph = JSON.parse(queryAllRes);
+        console.log(graph);
+      } else {
+        return;
       }
 
-      onMousewheel(e) {
-        e.preventDefault();
+      // 创造一个canvas，大小自适应浏览器窗口
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("width", window.innerWidth);
+      canvas.setAttribute("height", window.innerHeight);
+      canvas.setAttribute("id", "network");
+      document.body.appendChild(canvas);
 
-        this.mousePosition.x = e.offsetX; // 记录当前鼠标点击的横坐标
-        this.mousePosition.y = e.offsetY; // 记录当前鼠标点击的纵坐标
-        if (e.wheelDelta > 0) {
-          // 放大
-          this.scale = parseFloat((this.scaleStep + this.scale).toFixed(2)); // 解决小数点运算丢失精度的问题
-          if (this.scale > this.maxScale) {
-            this.scale = this.maxScale;
-            return;
+      console.log(canvas.width);
+      console.log(canvas.height);
+
+      // 创建scene类实现canvas拖动和放缩
+      class Scene {
+        offset = {
+          x: 0,
+          y: 0
+        }; // 拖动偏移
+        curOffset = {
+          x: 0,
+          y: 0
+        }; // 已有偏移
+        mousePosition = {
+          x: 0,
+          y: 0
+        }; // 鼠标滚轮点击时的坐标位置
+        maxScale = 8;
+        minScale = 0.4;
+        scaleStep = 0.2;
+        scale = 1;
+        preScale = 1;
+
+        x = 0; // 记录鼠标点击Canvas时的横坐标
+        y = 0; // 记录鼠标点击Canvas时的纵坐标
+
+        constructor(id) {
+          // basic
+          this.canvas = document.querySelector('#' + id)
+          this.width = canvas.width;
+          this.height = canvas.height;
+          this.canvas.width = canvas.width;
+          this.canvas.height = canvas.height;
+          // this.width = 2000;
+          // this.height = 2000;
+          // this.canvas.width = 2000;
+          // this.canvas.height = 2000;
+          this.ctx = this.canvas.getContext('2d');
+
+          // 设置拖动和放缩
+          this.onMousedown = this.onMousedown.bind(this);
+          this.onMousemove = this.onMousemove.bind(this);
+          this.onMouseup = this.onMouseup.bind(this);
+          this.onMousewheel = this.onMousewheel.bind(this);
+          this.canvas.addEventListener('mousewheel', this.onMousewheel);
+          this.canvas.addEventListener('mousedown', this.onMousedown);
+        }
+
+        onMousewheel(e) {
+          e.preventDefault();
+
+          this.mousePosition.x = e.offsetX; // 记录当前鼠标点击的横坐标
+          this.mousePosition.y = e.offsetY; // 记录当前鼠标点击的纵坐标
+          if (e.wheelDelta > 0) {
+            // 放大
+            this.scale = parseFloat((this.scaleStep + this.scale).toFixed(2)); // 解决小数点运算丢失精度的问题
+            if (this.scale > this.maxScale) {
+              this.scale = this.maxScale;
+              return;
+            }
+          } else {
+            // 缩小
+            this.scale = parseFloat((this.scale - this.scaleStep).toFixed(2)); // 解决小数点运算丢失精度的问题
+            if (this.scale < this.minScale) {
+              this.scale = this.minScale;
+              return;
+            }
           }
-        } else {
-          // 缩小
-          this.scale = parseFloat((this.scale - this.scaleStep).toFixed(2)); // 解决小数点运算丢失精度的问题
-          if (this.scale < this.minScale) {
-            this.scale = this.minScale;
-            return;
+
+          this.zoom();
+        }
+
+        zoom() {
+          this.offset.x = this.mousePosition.x - (this.mousePosition.x - this.offset.x) * this.scale / this.preScale;
+          this.offset.y = this.mousePosition.y - (this.mousePosition.y - this.offset.y) * this.scale / this.preScale;
+
+          console.log("zoom() called paint()")
+          this.paint(this.ctx);
+          this.preScale = this.scale;
+          this.curOffset.x = this.offset.x;
+          this.curOffset.y = this.offset.y;
+        }
+
+        onMousedown(e) {
+          if (e.button === 0) {
+            // 鼠标左键
+            this.x = e.x;
+            this.y = e.y
+            window.addEventListener('mousemove', this.onMousemove);
+            window.addEventListener('mouseup', this.onMouseup)
           }
         }
 
-        this.zoom();
-      }
+        onMousemove(e) {
+          this.offset.x = this.curOffset.x + (e.x - this.x);
+          this.offset.y = this.curOffset.y + (e.y - this.y);
 
-      zoom() {
-        this.offset.x = this.mousePosition.x - (this.mousePosition.x - this.offset.x) * this.scale / this.preScale;
-        this.offset.y = this.mousePosition.y - (this.mousePosition.y - this.offset.y) * this.scale / this.preScale;
-
-        console.log("zoom() called paint()")
-        this.paint(this.ctx);
-        this.preScale = this.scale;
-        this.curOffset.x = this.offset.x;
-        this.curOffset.y = this.offset.y;
-      }
-
-      onMousedown(e) {
-        if (e.button === 0) {
-          // 鼠标左键
-          this.x = e.x;
-          this.y = e.y
-          window.addEventListener('mousemove', this.onMousemove);
-          window.addEventListener('mouseup', this.onMouseup)
+          console.log("mousemove() called paint()")
+          this.paint();
         }
-      }
 
-      onMousemove(e) {
-        this.offset.x = this.curOffset.x + (e.x - this.x);
-        this.offset.y = this.curOffset.y + (e.y - this.y);
+        onMouseup() {
+          this.curOffset.x = this.offset.x;
+          this.curOffset.y = this.offset.y;
+          window.removeEventListener('mousemove', this.onMousemove);
+          window.removeEventListener('mouseup', this.onMouseup);
+        }
 
-        console.log("mousemove() called paint()")
-        this.paint();
-      }
-
-      onMouseup() {
-        this.curOffset.x = this.offset.x;
-        this.curOffset.y = this.offset.y;
-        window.removeEventListener('mousemove', this.onMousemove);
-        window.removeEventListener('mouseup', this.onMouseup);
-      }
-
-      draw() {
-        console.log("draw() called");
-        const canvas = d3.select("#network");
-        const width = canvas.attr("width");
-        const height = canvas.attr("height");
-        // radius of node
-        // r = 3,
-        // color pattern
-        const color = d3.scaleOrdinal([
+        draw() {
+          console.log("draw() called");
+          const canvas = d3.select("#network");
+          const width = canvas.attr("width");
+          const height = canvas.attr("height");
+          // radius of node
+          // r = 3,
+          // color pattern
+          const color = d3.scaleOrdinal([
             '#3e9de0',
             '#8b4cf8',
             '#62ff62',
@@ -168,126 +181,127 @@
             '#ffe35e',
             '#56ffa9',
             '#ff55b6',
-            '#abe758']);
+            '#abe758'
+          ]);
 
-        const ctxNode = canvas.node().getContext("2d");
+          const ctxNode = canvas.node().getContext("2d");
 
-        // const simulation = d3.forceSimulation()
-        //     .force("x", d3.forceX(width / 2))
-        //     .force("y", d3.forceY(height / 2))
-        //     .force("collide", d3.forceCollide()) // 控制节点不重叠, 参数定义的是两个圆心之间的距离
-        //     .force("charge", d3.forceManyBody() // charge 斥力
-        //       .strength(-100))
-        //     .force("link", d3.forceLink() // forceLink 通过 node_id 找到节点
-        //       .id(function (d) {
-        //         return d.node_id;
-        //       }));
-        //
-        //
-        // simulation
-        //   .nodes(graph.nodes)
-        //   .on("tick", update)
-        //   .force("link")
-        //   .links(graph.links);
+          // const simulation = d3.forceSimulation()
+          //     .force("x", d3.forceX(width / 2))
+          //     .force("y", d3.forceY(height / 2))
+          //     .force("collide", d3.forceCollide()) // 控制节点不重叠, 参数定义的是两个圆心之间的距离
+          //     .force("charge", d3.forceManyBody() // charge 斥力
+          //       .strength(-100))
+          //     .force("link", d3.forceLink() // forceLink 通过 node_id 找到节点
+          //       .id(function (d) {
+          //         return d.node_id;
+          //       }));
+          //
+          //
+          // simulation
+          //   .nodes(graph.nodes)
+          //   .on("tick", update)
+          //   .force("link")
+          //   .links(graph.links);
 
 
-        // canvas
-        //   .call(d3.drag()
-        //     .container(canvas.node())
-        //     .subject(dragSubject)
-        //     .on("start", dragStarted)
-        //     .on("drag", dragged)
-        //     .on("end", dragEnded));
+          // canvas
+          //   .call(d3.drag()
+          //     .container(canvas.node())
+          //     .subject(dragSubject)
+          //     .on("start", dragStarted)
+          //     .on("drag", dragged)
+          //     .on("end", dragEnded));
 
-        update();
+          update();
 
-        function update() {
-          // clear canvas
-          ctxNode.clearRect(0, 0, width, height);
+          function update() {
+            // clear canvas
+            ctxNode.clearRect(0, 0, width, height);
 
-          graph.links.forEach(drawLink);
-          graph.nodes.forEach(drawNode);
+            graph.links.forEach(drawLink);
+            graph.nodes.forEach(drawNode);
+          }
+
+          // draw nodes and links
+          function drawNode(d) {
+            ctxNode.beginPath();
+            ctxNode.globalAlpha = 1.0;
+            ctxNode.fillStyle = color(d.label);
+            // ctx.fillOpacity = 0.8;
+            d.x = Math.random() * width;
+            d.y = Math.random() * height;
+            ctxNode.moveTo(d.x, d.y);
+            ctxNode.arc(d.x, d.y, Math.log(d.value) + 4, 0, 2 * Math.PI);
+            ctxNode.fill();
+
+            // node外围的线，刚好是半透明，画在节点外围。
+            ctxNode.beginPath();
+            ctxNode.globalAlpha = 0.3;
+            // ctx.globalAlpha=1;
+            ctxNode.moveTo(d.x + Math.log(d.value) + 4, d.y);
+            ctxNode.arc(d.x, d.y, Math.log(d.value) + 3.5, 0, 2 * Math.PI);
+            ctxNode.strokeStyle = "#06293f"
+            ctxNode.stroke();
+          }
+
+          function drawLink(l) {
+            ctxNode.beginPath();
+            ctxNode.globalAlpha = 0.3;
+            // ctx.globalAlpha = 1.0;
+            // color
+            ctxNode.strokeStyle = "#06293f";
+            // 透明度
+            // ctx.strokeOpacity = 1;
+            // ctx.strokeLinecap = "round";
+            ctxNode.moveTo(l.source.x, l.source.y);
+            ctxNode.lineTo(l.target.x, l.target.y);
+            ctxNode.stroke();
+          }
+
+          // // drag event
+          // function dragSubject() {
+          //   return simulation.find(d3.event.x, d3.event.y);
+          // }
+          //
+          // function dragStarted() {
+          //   if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+          //   d3.event.subject.fx = d3.event.subject.x;
+          //   d3.event.subject.fy = d3.event.subject.y;
+          //   console.log(d3.event.subject);
+          // }
+          //
+          // function dragged() {
+          //   d3.event.subject.fx = d3.event.x;
+          //   d3.event.subject.fy = d3.event.y;
+          // }
+          //
+          // function dragEnded() {
+          //   if (!d3.event.active) simulation.alphaTarget(0);
+          //   d3.event.subject.fx = null;
+          //   d3.event.subject.fy = null;
+          // }
+        };
+
+        clear() {
+          this.canvas.width = this.width;
         }
 
-        // draw nodes and links
-        function drawNode(d) {
-          ctxNode.beginPath();
-          ctxNode.globalAlpha = 1.0;
-          ctxNode.fillStyle = color(d.label);
-          // ctx.fillOpacity = 0.8;
-          d.x=Math.random()*width;
-          d.y=Math.random()*height;
-          ctxNode.moveTo(d.x, d.y);
-          ctxNode.arc(d.x, d.y, Math.log(d.value)+4, 0, 2 * Math.PI);
-          ctxNode.fill();
-
-          // node外围的线，刚好是半透明，画在节点外围。
-          ctxNode.beginPath();
-          ctxNode.globalAlpha=0.3;
-          // ctx.globalAlpha=1;
-          ctxNode.moveTo(d.x + Math.log(d.value)+4, d.y);
-          ctxNode.arc(d.x, d.y, Math.log(d.value)+3.5, 0, 2 * Math.PI);
-          ctxNode.strokeStyle = "#06293f"
-          ctxNode.stroke();
+        paint() {
+          this.clear();
+          this.ctx.translate(this.offset.x, this.offset.y);
+          this.ctx.scale(this.scale, this.scale);
+          console.log("paint() called draw()");
+          this.draw();
         }
-
-        function drawLink(l) {
-          ctxNode.beginPath();
-          ctxNode.globalAlpha = 0.3;
-          // ctx.globalAlpha = 1.0;
-          // color
-          ctxNode.strokeStyle = "#06293f";
-          // 透明度
-          // ctx.strokeOpacity = 1;
-          // ctx.strokeLinecap = "round";
-          ctxNode.moveTo(l.source.x, l.source.y);
-          ctxNode.lineTo(l.target.x, l.target.y);
-          ctxNode.stroke();
-        }
-
-        // // drag event
-        // function dragSubject() {
-        //   return simulation.find(d3.event.x, d3.event.y);
-        // }
-        //
-        // function dragStarted() {
-        //   if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-        //   d3.event.subject.fx = d3.event.subject.x;
-        //   d3.event.subject.fy = d3.event.subject.y;
-        //   console.log(d3.event.subject);
-        // }
-        //
-        // function dragged() {
-        //   d3.event.subject.fx = d3.event.x;
-        //   d3.event.subject.fy = d3.event.y;
-        // }
-        //
-        // function dragEnded() {
-        //   if (!d3.event.active) simulation.alphaTarget(0);
-        //   d3.event.subject.fx = null;
-        //   d3.event.subject.fy = null;
-        // }
-      };
-
-      clear() {
-        this.canvas.width = this.width;
       }
 
-      paint() {
-        this.clear();
-        this.ctx.translate(this.offset.x, this.offset.y);
-        this.ctx.scale(this.scale, this.scale);
-        console.log("paint() called draw()");
-        this.draw();
-      }
+      let scene = new Scene('network');
+
+      scene.draw();
+
     }
-
-    let scene = new Scene('network');
-
-    scene.draw();
-
-  }
-</script>
+  </script>
 </body>
 
 </html>
