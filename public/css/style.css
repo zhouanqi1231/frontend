@@ -19,7 +19,7 @@ a {
   color: #0083b7;
 }
 
-.info_panel {
+.info-panel {
   display: block;
   position: absolute;
   top: 23%;
@@ -34,7 +34,7 @@ a {
   overflow: auto;
 }
 
-.input_panel {
+.input-panel {
   display: block;
   position: absolute;
   top: 2%;
@@ -44,7 +44,7 @@ a {
   overflow: auto;
 }
 
-.input_query {
+.input-query {
   display: block;
   position: relative;
   top: 15%;
