@@ -19,6 +19,7 @@ httpRequest.onreadystatechange = function () {
   }
 
   const chart = forceGraph(data, {
+    document,
     nodeId: (d) => d.node_id,
     nodeGroup: (d) => d.label,
     nodeTitle: (d) => `${d.node_id}\n${d.label}`,

@@ -4,6 +4,7 @@ export const forceGraph = (
     links, // an iterable of link objects (typically [{source, target}, …])
   },
   {
+    document,
     svgId = "force-graph",
     nodeId = (d) => d.id, // given d in nodes, returns a unique identifier (string)
     nodeGroup, // given d in nodes, returns an (ordinal) value for color
@@ -162,6 +163,41 @@ export const forceGraph = (
   if (T) node.append("title").text(({ index: i }) => T[i]);
 
   if (invalidation != null) invalidation.then(() => simulation.stop());
+
+  svg.selectAll("circle").on("click", clicked);
+
+  function clicked(event, d) {
+    if (event.defaultPrevented) return; // dragged
+
+    // 清除上次的选中效果
+    node.attr("fill", ({ index: i }) => color(G[i]));
+    node.attr("r", ({ index: i }) => Math.sqrt(R[i]) + 3);
+
+    // 选中效果：黑色，变大
+    d3.select(this)
+      .transition()
+      .attr("fill", "black")
+      .attr("r", ({ index: i }) => Math.sqrt(R[i]) + 10);
+
+    // 向后端发请求
+    let formData = new FormData();
+    formData.append("node_id", this.id);
+
+    const req = new XMLHttpRequest();
+    req.open("POST", "http://127.0.0.1:5000/get_node", true);
+    req.send(formData);
+
+    req.onreadystatechange = function () {
+      if (req.readyState == 4 && req.status == 200) {
+        //  response
+        var json = req.responseText;
+
+        // show data
+        var panel = document.getElementById("info-panel");
+        panel.innerHTML = json;
+      }
+    };
+  }
 
   return Object.assign(svg.node(), {
     scales: {
