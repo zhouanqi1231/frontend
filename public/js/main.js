@@ -33,3 +33,11 @@ httpRequest.onreadystatechange = function () {
 
   d3.select("body").append(() => chart);
 };
+
+function openInfoPanel() {
+  document.getElementById("info-panel").style.display = "block";
+}
+
+function closeInfoPanel() {
+  document.getElementById("info-panel").style.display = "none";
+}

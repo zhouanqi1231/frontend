@@ -173,6 +173,8 @@ export const forceGraph = (
   function nodeClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
+    openInfoPanel();
+
     // 清除上次的选中效果
     node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
     node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
@@ -200,13 +202,17 @@ export const forceGraph = (
 
         // show data
         var panel = document.getElementById("info-panel");
-        panel.innerHTML = json;
+        panel.innerHTML =
+          `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
+          json;
       }
     };
   }
 
   function linkClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
+
+    openInfoPanel();
 
     // 清除上次的选中效果
     node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
@@ -235,7 +241,9 @@ export const forceGraph = (
 
         // show data
         var panel = document.getElementById("info-panel");
-        panel.innerHTML = json;
+        panel.innerHTML =
+          `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
+          json;
       }
     };
   }
