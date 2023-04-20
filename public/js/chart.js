@@ -16,11 +16,12 @@ export const forceGraph = (
     nodeStrokeOpacity = 1, // node stroke opacity
     nodeRadius = 5, // node radius, in pixels
     nodeStrength,
+    linkId = (d) => d.id,
     linkSource = ({ source }) => source, // given d in links, returns a node identifier string
     linkTarget = ({ target }) => target, // given d in links, returns a node identifier string
     linkStroke = "#999", // link stroke color
     linkStrokeOpacity = 0.6, // link stroke opacity
-    linkStrokeWidth = 1.5, // given d in links, returns a stroke width in pixels
+    linkStrokeWidth = 4, // given d in links, returns a stroke width in pixels
     linkStrokeLinecap = "round", // link stroke linecap
     linkStrength,
     colors = [
@@ -44,39 +45,42 @@ export const forceGraph = (
     value !== null && typeof value === "object" ? value.valueOf() : value;
 
   // Compute values.
-  const N = d3.map(nodes, nodeId).map(intern);
-  const LS = d3.map(links, linkSource).map(intern);
-  const LT = d3.map(links, linkTarget).map(intern);
-  if (nodeTitle === undefined) nodeTitle = (_, i) => N[i];
-  const T = nodeTitle == null ? null : d3.map(nodes, nodeTitle);
-  const G = nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
-  const W =
+  const NODEID = d3.map(nodes, nodeId).map(intern);
+  const LINKID = d3.map(links, linkId).map(intern);
+  const LINKSOURCE = d3.map(links, linkSource).map(intern);
+  const LINKTARGET = d3.map(links, linkTarget).map(intern);
+  if (nodeTitle === undefined) nodeTitle = (_, i) => NODEID[i];
+  const NODETITLE = nodeTitle == null ? null : d3.map(nodes, nodeTitle);
+  const NODEGROUP =
+    nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
+  const LINKWIDTH =
     typeof linkStrokeWidth !== "function"
       ? null
       : d3.map(links, linkStrokeWidth);
-  const L = typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
-  const R = typeof nodeRadius !== "function" ? null : d3.map(nodes, nodeRadius);
+  const LINKSTROKE =
+    typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
+  const NODERADIUS =
+    typeof nodeRadius !== "function" ? null : d3.map(nodes, nodeRadius);
 
   // Replace the input nodes and links with mutable objects for the simulation.
   nodes = d3.map(nodes, (_, i) => ({
-    id: N[i],
+    id: NODEID[i],
   }));
   links = d3.map(links, (_, i) => ({
-    source: LS[i],
-    target: LT[i],
+    source: LINKSOURCE[i],
+    target: LINKTARGET[i],
+    id: LINKID[i],
   }));
 
   // Compute default domains.
-  if (G && nodeGroups === undefined) nodeGroups = d3.sort(G);
+  if (NODEGROUP && nodeGroups === undefined) nodeGroups = d3.sort(NODEGROUP);
 
   // Construct the scales.
   const color = nodeGroup == null ? null : d3.scaleOrdinal(nodeGroups, colors);
 
   // Construct the forces.
   const forceNode = d3.forceManyBody();
-  //   const forceLink = d3.forceLink(links).id(({ index: i }) => N[i]);
   if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
-  //   if (linkStrength !== undefined) forceLink.strength(linkStrength);
 
   const svg = d3
     .create("svg")
@@ -90,14 +94,12 @@ export const forceGraph = (
     .append("g")
     .attr("stroke", typeof linkStroke !== "function" ? linkStroke : null)
     .attr("stroke-opacity", linkStrokeOpacity)
-    .attr(
-      "stroke-width",
-      typeof linkStrokeWidth !== "function" ? linkStrokeWidth : null
-    )
+    .attr("stroke-width", linkStrokeWidth)
     .attr("stroke-linecap", linkStrokeLinecap)
     .selectAll("line")
     .data(links)
-    .join("line");
+    .join("line")
+    .attr("id", (d) => d.id);
 
   const node = svg
     .append("g")
@@ -115,7 +117,7 @@ export const forceGraph = (
     .forceSimulation(nodes)
     .force(
       "link",
-      d3.forceLink(links).id(({ index: i }) => N[i])
+      d3.forceLink(links).id(({ index: i }) => NODEID[i])
     )
     .force("charge", forceNode)
     .force("center", d3.forceCenter())
@@ -156,28 +158,32 @@ export const forceGraph = (
 
   node.call(drag(simulation));
 
-  if (W) link.attr("stroke-width", ({ index: i }) => W[i]);
-  if (L) link.attr("stroke", ({ index: i }) => L[i]);
-  if (G) node.attr("fill", ({ index: i }) => color(G[i]));
-  if (R) node.attr("r", ({ index: i }) => Math.sqrt(R[i]) + 3);
-  if (T) node.append("title").text(({ index: i }) => T[i]);
+  if (LINKWIDTH) link.attr("stroke-width", ({ index: i }) => LINKWIDTH[i]);
+  if (LINKSTROKE) link.attr("stroke", ({ index: i }) => LINKSTROKE[i]);
+  if (NODEGROUP) node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
+  if (NODERADIUS)
+    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
+  if (NODETITLE) node.append("title").text(({ index: i }) => NODETITLE[i]);
 
   if (invalidation != null) invalidation.then(() => simulation.stop());
 
-  svg.selectAll("circle").on("click", clicked);
+  svg.selectAll("circle").on("click", nodeClicked);
+  svg.selectAll("line").on("click", linkClicked);
 
-  function clicked(event, d) {
+  function nodeClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
     // 清除上次的选中效果
-    node.attr("fill", ({ index: i }) => color(G[i]));
-    node.attr("r", ({ index: i }) => Math.sqrt(R[i]) + 3);
+    node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
+    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
+    link.attr("stroke", nodeStroke);
+    link.attr("stroke-width", linkStrokeWidth);
 
     // 选中效果：黑色，变大
     d3.select(this)
       .transition()
       .attr("fill", "black")
-      .attr("r", ({ index: i }) => Math.sqrt(R[i]) + 10);
+      .attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 10);
 
     // 向后端发请求
     let formData = new FormData();
@@ -185,6 +191,41 @@ export const forceGraph = (
 
     const req = new XMLHttpRequest();
     req.open("POST", "http://127.0.0.1:5000/get_node", true);
+    req.send(formData);
+
+    req.onreadystatechange = function () {
+      if (req.readyState == 4 && req.status == 200) {
+        //  response
+        var json = req.responseText;
+
+        // show data
+        var panel = document.getElementById("info-panel");
+        panel.innerHTML = json;
+      }
+    };
+  }
+
+  function linkClicked(event, d, nodeStroke, linkStrokeWidth) {
+    if (event.defaultPrevented) return; // dragged
+
+    // 清除上次的选中效果
+    node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
+    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
+    link.attr("stroke", nodeStroke);
+    link.attr("stroke-width", linkStrokeWidth);
+
+    // 选中效果：黑色，变粗
+    d3.select(this)
+      .transition()
+      .attr("stroke", "black")
+      .attr("stroke-width", 8);
+
+    // 向后端发请求
+    let formData = new FormData();
+    formData.append("relationship_id", this.id);
+
+    const req = new XMLHttpRequest();
+    req.open("POST", "http://127.0.0.1:5000/get_relationship", true);
     req.send(formData);
 
     req.onreadystatechange = function () {

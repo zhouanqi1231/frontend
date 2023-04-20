@@ -21,12 +21,13 @@ httpRequest.onreadystatechange = function () {
   const chart = forceGraph(data, {
     document,
     nodeId: (d) => d.node_id,
+    linkId: (d) => d.relationship_id,
     nodeGroup: (d) => d.label,
     nodeTitle: (d) => `${d.node_id}\n${d.label}`,
     // linkStrokeWidth: (l) => Math.sqrt(l.value),
     width: window.innerWidth,
     height: window.innerHeight,
-    nodeStrength: -10,
+    nodeStrength: -18,
     nodeRadius: (d) => d.value,
   });
 
