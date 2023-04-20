@@ -183,7 +183,7 @@ export const forceGraph = (
     d3.select(this)
       .transition()
       .attr("fill", "black")
-      .attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 10);
+      .attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 7);
 
     // 向后端发请求
     let formData = new FormData();
