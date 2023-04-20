@@ -7,13 +7,51 @@
 </head>
 
 <body link="white">
+  <!-- 详细信息面板 -->
   <div id="info-panel" class="info-panel">
     <p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>
   </div>
+
   <div id="input-panel" class="input-panel">
-    <input type="text" id="input-query" name="input-query" class="input-query">
+    <input type="text" id="input-query" name="input-query" class="input-query" onkeydown="return input_nl_query(event)">
   </div>
   <script src='js/main.js' type='module'></script>
 </body>
+
+<script>
+  function openInfoPanel() {
+    document.getElementById("info-panel").style.display = "block";
+  }
+
+  function closeInfoPanel() {
+    document.getElementById("info-panel").style.display = "none";
+  }
+
+  function input_nl_query(e) {
+    // 回车触发事件
+    if (e.keyCode != 13) {
+      return;
+    }
+
+    var query_str = document.getElementById("input-query").value;
+
+    let formData = new FormData();
+    formData.append("quert_str", query_str);
+
+    // 请求后端接口
+    const req = new XMLHttpRequest();
+    req.open("POST", "http://127.0.0.1:5000/nl_query", true);
+    req.send(formData);
+
+    req.onreadystatechange = function() {
+      if (req.readyState == 4 && req.status == 200) {
+        //  response
+        // 按理说应该是返回高亮的node和link列表
+        var json = req.responseText;
+        console.log(json);
+      }
+    };
+  }
+</script>
 
 </html>

@@ -27,11 +27,12 @@ a {
   width: 22%;
   height: 45%;
   padding: 15px;
-  border: 2px solid rgb(30, 121, 42);
+  /* border: 2px solid rgb(30, 121, 42); */
   border-radius: 20px;
   background-color: rgba(33, 137, 47, 0.597);
   z-index: 1002;
   overflow: auto;
+  box-shadow: 3px 3px 10px rgba(11, 79, 22, 0.634);
 }
 
 .input-panel {
@@ -56,7 +57,7 @@ a {
   padding-right: 10%;
   border: 1px;
   border-radius: 13px;
-  font-size: 22px;
+  font-size: 17px;
   color: #1f6e30;
   outline-color: #1f6e30;
   background-color: rgba(33, 137, 47, 0.597);
