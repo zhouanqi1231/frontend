@@ -30,22 +30,61 @@
       width: 22%;
       height: 45%;
       padding: 15px;
-      border: 1px solid rgba(33, 137, 47, 0.597);
-      border-radius: 24px;
-      background-color: rgba(255, 255, 255, 0.36);
+      /* border: 1px solid rgba(33, 137, 47, 0.597); */
+      border-radius: 30px;
+      background-color: rgba(33, 137, 47, 0.597);
+      z-index: 1002;
+      overflow: auto;
+    }
+
+    .input_panel {
+      display: block;
+      position: absolute;
+      top: 2%;
+      left: 1%;
+      width: 20%;
+      height: 7%;
+      padding: 15px;
+      /* border: 1px solid rgba(33, 137, 47, 0.597); */
+      border-radius: 20px;
+      /* background-color: rgba(33, 137, 47, 0.597); */
+      z-index: 1002;
+      overflow: auto;
+    }
+
+    .input_query {
+      display: block;
+      /* position: absolute; */
+      top: 15%;
+      left: 5%;
+      width: 90%;
+      height: 70%;
+      padding: 5px;
+      padding-left: 15px;
+      padding-right: 15px;
+      border: 1px;
+      border-radius: 13px;
+      font-size: 22px;
+      color: #1f6e30;
+      outline-color: #1f6e30;
+      background-color: rgba(33, 137, 47, 0.597);
       z-index: 1002;
       overflow: auto;
     }
   </style>
+  <!-- <script src="https://d3js.org/d3.v4.min.js"></script> -->
 </head>
 
-<body>
+<body link="white">
   <!-- <p>示例弹出层：<a href="JavaScript:void(0)" onclick="openDialog()">请点这里</a></p> -->
-
+  <!-- 悬浮框 -->
   <div id="info_panel" class="info_panel">
-    <a href="javascript:void(0)" onclick="closeInfoPanel()">X</a>
+    <p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>
   </div>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <div id="input_panel" class="input_panel">
+    <input type="text" id="input_query" name="input_query" class="input_query" required minlength="4" maxlength="8" size="10">
+  </div>
+
   <script>
     // 创造一个canvas，大小自适应浏览器窗口
     var canvas = document.createElement("canvas");
@@ -133,13 +172,13 @@
       function drawNode(d) {
         ctx.beginPath();
         ctx.globalAlpha = 1.0;
-        ctx.fillStyle = color(d.label);
+        ctx.fillStyle = color(d.label); // 根据label聚类分色
         // ctx.fillOpacity = 0.8;
         ctx.moveTo(d.x, d.y);
         ctx.arc(d.x, d.y, Math.log(d.value) + 6, 0, 2 * Math.PI);
         ctx.fill();
 
-        // node外围的线，刚好是半透明，画在节点外围。
+        // node外围的线，半透明，内侧。
         ctx.beginPath();
         ctx.globalAlpha = 0.3;
         ctx.lineWidth = 1;
@@ -155,8 +194,8 @@
         ctx.globalAlpha = 0.3;
         // ctx.globalAlpha = 1.0;
         // color
-        ctx.strokeStyle = "#033118";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
         // 透明度
         // ctx.strokeOpacity = 1;
         // ctx.strokeLinecap = "round";
