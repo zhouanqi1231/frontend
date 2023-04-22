@@ -25,14 +25,15 @@ a {
   top: 23%;
   left: 72%;
   width: 22%;
-  height: 45%;
+  height: 50%;
   padding: 15px;
   /* border: 2px solid rgb(30, 121, 42); */
   border-radius: 20px;
-  background-color: rgba(33, 137, 47, 0.597);
   z-index: 1002;
   overflow: auto;
-  box-shadow: 3px 3px 10px rgba(69, 126, 86, 0.432);
+  background-color: rgba(32, 93, 22, 0.204);
+  box-shadow: 1px 1px 13px rgba(64, 123, 84, 0.131);
+  backdrop-filter: blur(5px) saturate(150%);
 }
 
 .input-panel {
@@ -41,7 +42,7 @@ a {
   top: 2%;
   left: 1%;
   width: 20%;
-  height: 7%;
+  height: 9%;
   overflow: auto;
 }
 
@@ -60,7 +61,7 @@ a {
   font-size: 17px;
   color: #1f6e30;
   outline-color: #1f6e30;
-  background-color: rgba(33, 137, 47, 0.597);
   overflow: auto;
-  box-shadow: 3px 3px 4px rgba(69, 126, 86, 0.432);
+  background-color: rgba(32, 93, 22, 0.204);
+  backdrop-filter: blur(5px) saturate(150%);
 }
