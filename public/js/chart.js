@@ -27,9 +27,9 @@ export const forceGraph = (
     colors = [
       "#2b851c",
       "#61b628",
-      "#62ff62",
-      "#ff4f4f",
-      "#aa5fff",
+      "#7abd7a",
+      "#4ead81",
+      "#8ed542",
       "#49ceff",
       "#ffe35e",
       "#56ffa9",
