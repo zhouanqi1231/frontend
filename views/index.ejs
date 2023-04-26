@@ -40,7 +40,8 @@
     var query_str = document.getElementById("input-query").value;
 
     let formData = new FormData();
-    formData.append("quert_str", query_str);
+    formData.append("query_str", query_str);
+    console.log(query_str);
 
     // 请求后端接口
     const req = new XMLHttpRequest();
