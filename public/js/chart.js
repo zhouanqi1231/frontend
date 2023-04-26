@@ -200,11 +200,60 @@ export const forceGraph = (
         //  response
         var json = req.responseText;
 
+        var nodeInfo = JsonStrToMap(json);
+        var nodeProperties = ObjToMap(nodeInfo.get("properties"));
+
+        console.log(nodeInfo);
+
+        var htmlStr = "";
+        if (nodeProperties.has("title"))
+          htmlStr +=
+            `<p style="font-size:25px;"><b>` +
+            nodeProperties.get("title") +
+            `</b></p>`;
+        if (nodeProperties.has("name"))
+          htmlStr +=
+            `<p style="font-size:25px;"><b>` +
+            nodeProperties.get("name") +
+            `</b></p>`;
+
+        // node info
+        for (var [key, value] of nodeInfo) {
+          console.log(key);
+          if (key != "properties") {
+            htmlStr += `<p><b>` + key + `: </b>` + value + `</p>`;
+          }
+        }
+
+        // properties info
+        htmlStr += `<p><b>properties: </b></p>`;
+        // title和name先行
+        if (nodeProperties.has("title"))
+          htmlStr +=
+            `<p style="margin-left: 25px;"><b>title: </b>` +
+            nodeProperties.get("title") +
+            `</p>`;
+        if (nodeProperties.has("name"))
+          htmlStr +=
+            `<p style="margin-left: 25px;"><b>name: </b>` +
+            nodeProperties.get("name") +
+            `</p>`;
+
+        for (var [key, value] of nodeProperties) {
+          if (key != "title" && key != "name")
+            htmlStr +=
+              `<p style="margin-left: 25px;"><b>` +
+              key +
+              `: </b>` +
+              value +
+              `</p>`;
+        }
+
         // show data
         var panel = document.getElementById("info-panel");
         panel.innerHTML =
           `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
-          json;
+          htmlStr;
       }
     };
   }
@@ -239,13 +288,52 @@ export const forceGraph = (
         //  response
         var json = req.responseText;
 
+        var linkInfo = JsonStrToMap(json);
+        var linkProperties = ObjToMap(linkInfo.get("properties"));
+
+        console.log(linkInfo);
+
+        var htmlStr = "";
+        htmlStr +=
+          `<p style="font-size:25px;"><b>` + linkInfo.get("type") + `</b></p>`;
+
+        for (var [key, value] of linkInfo) {
+          console.log(key);
+          if (key != "properties" && key != "type") {
+            htmlStr += `<p><b>` + key + `: </b>` + value + `</p>`;
+          }
+        }
+
+        htmlStr += `<p><b>properties: </b></p>`;
+
+        for (var [key, value] of linkProperties) {
+          htmlStr +=
+            `<p style="margin-left: 25px;"><b>` +
+            key +
+            `: </b>` +
+            value +
+            `</p>`;
+        }
+
         // show data
         var panel = document.getElementById("info-panel");
         panel.innerHTML =
           `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
-          json;
+          htmlStr;
       }
     };
+  }
+
+  function ObjToMap(obj) {
+    var map = new Map();
+    for (let key in obj) {
+      map.set(key, obj[key]);
+    }
+    return map;
+  }
+
+  function JsonStrToMap(str) {
+    return ObjToMap(JSON.parse(str));
   }
 
   return Object.assign(svg.node(), {
