@@ -12,9 +12,13 @@
     <p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>
   </div>
 
+  <!-- 输入查询 -->
   <div id="input-panel" class="input-panel">
     <input type="text" id="input-query" name="input-query" class="input-query" onkeydown="return input_nl_query(event)">
   </div>
+
+  <!-- 展示查询结果 -->
+  <div id="query-result-panel" class="query-result-panel"></div>
   <script src='js/main.js' type='module'></script>
 </body>
 
@@ -48,9 +52,45 @@
         //  response
         // 按理说应该是返回高亮的node和link列表
         var json = req.responseText;
+
+        resp = JsonStrToMap(json);
+        query_results = resp.get("query_results");
+        query_results.forEach(result => {
+          query_str = result["query_str"];
+          nodes = result["query_records"]["nodes"];
+          links = result["query_records"]["links"];
+          console.log(query_str);
+          console.log(nodes);
+          nodes.forEach(nodeId => {
+            console.log(nodeId);
+            var node = document.getElementById("node-" + nodeId)
+            d3.select(node)
+              .transition()
+              .attr("fill", "black")
+              .attr("r", ({
+                index: i
+              }) => 20);
+            console.log(node);
+          })
+          console.log(links);
+        });
+
         console.log(json);
+        console.log(resp);
       }
     };
+  }
+
+  function ObjToMap(obj) {
+    var map = new Map();
+    for (let key in obj) {
+      map.set(key, obj[key]);
+    }
+    return map;
+  }
+
+  function JsonStrToMap(str) {
+    return ObjToMap(JSON.parse(str));
   }
 </script>
 

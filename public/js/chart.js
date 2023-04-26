@@ -99,7 +99,7 @@ export const forceGraph = (
     .selectAll("line")
     .data(links)
     .join("line")
-    .attr("id", (d) => d.id);
+    .attr("id", (d) => "link-" + d.id);
 
   const node = svg
     .append("g")
@@ -111,7 +111,8 @@ export const forceGraph = (
     .data(nodes)
     .join("circle")
     .attr("r", typeof nodeRadius !== "function" ? nodeRadius : null)
-    .attr("id", (d) => d.id);
+    .attr("id", (d) => "node-" + d.id)
+    .attr("original-fill", (d) => "node-" + d.id);
 
   const simulation = d3
     .forceSimulation(nodes)
@@ -173,8 +174,6 @@ export const forceGraph = (
   function nodeClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
-    openInfoPanel();
-
     // 清除上次的选中效果
     node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
     node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
@@ -189,7 +188,8 @@ export const forceGraph = (
 
     // 向后端发请求
     let formData = new FormData();
-    formData.append("node_id", this.id);
+    console.log(this.id.substring(5, this.id.length));
+    formData.append("node_id", this.id.substring(5, this.id.length));
 
     const req = new XMLHttpRequest();
     req.open("POST", "http://127.0.0.1:5000/get_node", true);
@@ -203,7 +203,7 @@ export const forceGraph = (
         var nodeInfo = JsonStrToMap(json);
         var nodeProperties = ObjToMap(nodeInfo.get("properties"));
 
-        console.log(nodeInfo);
+        // console.log(nodeInfo);
 
         var htmlStr = "";
         if (nodeProperties.has("title"))
@@ -219,7 +219,7 @@ export const forceGraph = (
 
         // node info
         for (var [key, value] of nodeInfo) {
-          console.log(key);
+          // console.log(key);
           if (key != "properties") {
             htmlStr += `<p><b>` + key + `: </b>` + value + `</p>`;
           }
@@ -254,14 +254,13 @@ export const forceGraph = (
         panel.innerHTML =
           `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
           htmlStr;
+        openInfoPanel();
       }
     };
   }
 
   function linkClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
-
-    openInfoPanel();
 
     // 清除上次的选中效果
     node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
@@ -277,7 +276,7 @@ export const forceGraph = (
 
     // 向后端发请求
     let formData = new FormData();
-    formData.append("relationship_id", this.id);
+    formData.append("relationship_id", this.id.substring(5, this.id.length));
 
     const req = new XMLHttpRequest();
     req.open("POST", "http://127.0.0.1:5000/get_relationship", true);
@@ -291,14 +290,14 @@ export const forceGraph = (
         var linkInfo = JsonStrToMap(json);
         var linkProperties = ObjToMap(linkInfo.get("properties"));
 
-        console.log(linkInfo);
+        // console.log(linkInfo);
 
         var htmlStr = "";
         htmlStr +=
           `<p style="font-size:25px;"><b>` + linkInfo.get("type") + `</b></p>`;
 
         for (var [key, value] of linkInfo) {
-          console.log(key);
+          // console.log(key);
           if (key != "properties" && key != "type") {
             htmlStr += `<p><b>` + key + `: </b>` + value + `</p>`;
           }
@@ -320,6 +319,7 @@ export const forceGraph = (
         panel.innerHTML =
           `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
           htmlStr;
+        openInfoPanel();
       }
     };
   }

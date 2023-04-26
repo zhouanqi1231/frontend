@@ -38,6 +38,24 @@ a {
   font-family: Verdana;
 }
 
+.query-result-panel {
+  display: block;
+  position: absolute;
+  top: 23%;
+  left: 2%;
+  width: 22%;
+  height: 50%;
+  padding: 25px;
+  /* border: 2px solid rgb(30, 121, 42); */
+  border-radius: 20px;
+  z-index: 1002;
+  overflow: auto;
+  background-color: rgba(32, 93, 22, 0.204);
+  box-shadow: 1px 1px 13px rgba(64, 123, 84, 0.131);
+  backdrop-filter: blur(5px) saturate(150%);
+  font-family: Verdana;
+}
+
 .input-panel {
   display: block;
   position: absolute;
