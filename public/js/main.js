@@ -18,8 +18,10 @@ httpRequest.onreadystatechange = function () {
     return;
   }
 
+  var infoPanel = document.getElementById("info-panel");
+
   const chart = forceGraph(data, {
-    document,
+    infoPanel,
     nodeId: (d) => d.node_id,
     linkId: (d) => d.relationship_id,
     nodeGroup: (d) => d.label,

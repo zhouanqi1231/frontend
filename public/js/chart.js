@@ -4,12 +4,11 @@ export const forceGraph = (
     links, // an iterable of link objects (typically [{source, target}, …])
   },
   {
-    document,
+    infoPanel,
     svgId = "force-graph",
     nodeId = (d) => d.id, // given d in nodes, returns a unique identifier (string)
     nodeGroup, // given d in nodes, returns an (ordinal) value for color
     nodeGroups, // an array of ordinal values representing the node groups
-    nodeTitle, // given d in nodes, a title string
     nodeFill = "currentColor", // node stroke fill (if not using a group color encoding)
     nodeStroke = "#fff", // node stroke color
     nodeStrokeWidth = 1.5, // node stroke width, in pixels
@@ -23,7 +22,6 @@ export const forceGraph = (
     linkStrokeOpacity = 0.6, // link stroke opacity
     linkStrokeWidth = 4, // given d in links, returns a stroke width in pixels
     linkStrokeLinecap = "round", // link stroke linecap
-    linkStrength,
     colors = [
       "#2b851c",
       "#61b628",
@@ -35,10 +33,9 @@ export const forceGraph = (
       "#56ffa9",
       "#ff55b6",
       "#abe758",
-    ], // an array of color strings, for the node groups
-    width = 640, // outer width, in pixels
-    height = 400, // outer height, in pixels
-    invalidation,
+    ],
+    width, // w&h for graph
+    height,
   } = {}
 ) => {
   const intern = (value) =>
@@ -46,17 +43,12 @@ export const forceGraph = (
 
   // Compute values.
   const NODEID = d3.map(nodes, nodeId).map(intern);
+  const NODEGROUP =
+    nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
+
   const LINKID = d3.map(links, linkId).map(intern);
   const LINKSOURCE = d3.map(links, linkSource).map(intern);
   const LINKTARGET = d3.map(links, linkTarget).map(intern);
-  if (nodeTitle === undefined) nodeTitle = (_, i) => NODEID[i];
-  const NODETITLE = nodeTitle == null ? null : d3.map(nodes, nodeTitle);
-  const NODEGROUP =
-    nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
-  const LINKWIDTH =
-    typeof linkStrokeWidth !== "function"
-      ? null
-      : d3.map(links, linkStrokeWidth);
   const LINKSTROKE =
     typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
   const NODERADIUS =
@@ -78,7 +70,7 @@ export const forceGraph = (
   // Construct the scales.
   const color = nodeGroup == null ? null : d3.scaleOrdinal(nodeGroups, colors);
 
-  // Construct the forces.
+  // node之间的力
   const forceNode = d3.forceManyBody();
   if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
 
@@ -134,7 +126,6 @@ export const forceGraph = (
   const drag = (simulation) => {
     const dragstarted = (event) => {
       if (!event.active) simulation.alphaTarget(0.3).restart();
-      if (invalidation != null) invalidation.then(() => simulation.stop());
       event.subject.fx = event.subject.x;
       event.subject.fy = event.subject.y;
     };
@@ -159,14 +150,9 @@ export const forceGraph = (
 
   node.call(drag(simulation));
 
-  if (LINKWIDTH) link.attr("stroke-width", ({ index: i }) => LINKWIDTH[i]);
-  if (LINKSTROKE) link.attr("stroke", ({ index: i }) => LINKSTROKE[i]);
   if (NODEGROUP) node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
   if (NODERADIUS)
     node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
-  if (NODETITLE) node.append("title").text(({ index: i }) => NODETITLE[i]);
-
-  if (invalidation != null) invalidation.then(() => simulation.stop());
 
   svg.selectAll("circle").on("click", nodeClicked);
   svg.selectAll("line").on("click", linkClicked);
@@ -174,21 +160,16 @@ export const forceGraph = (
   function nodeClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
-    // 清除上次的选中效果
-    node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
-    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
-    link.attr("stroke", nodeStroke);
-    link.attr("stroke-width", linkStrokeWidth);
+    // 清除上次的选中效果，添加本次选中效果
+    clearHighlight(nodeStroke, linkStrokeWidth);
 
-    // 选中效果：黑色，变大
     d3.select(this)
       .transition()
       .attr("fill", "black")
       .attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 7);
 
-    // 向后端发请求
+    // 向后端发请求 表单传参
     let formData = new FormData();
-    console.log(this.id.substring(5, this.id.length));
     formData.append("node_id", this.id.substring(5, this.id.length));
 
     const req = new XMLHttpRequest();
@@ -196,79 +177,46 @@ export const forceGraph = (
     req.send(formData);
 
     req.onreadystatechange = function () {
-      if (req.readyState == 4 && req.status == 200) {
-        //  response
-        var json = req.responseText;
+      if (!(req.readyState == 4 && req.status == 200)) return;
 
-        var nodeInfo = JsonStrToMap(json);
-        var nodeProperties = ObjToMap(nodeInfo.get("properties"));
+      var json = req.responseText;
+      var nodeInfo = JsonStrToMap(json);
+      var nodeProperties = ObjToMap(nodeInfo.get("properties"));
 
-        // console.log(nodeInfo);
-
-        var htmlStr = "";
-        if (nodeProperties.has("title"))
-          htmlStr +=
-            `<p style="font-size:25px;"><b>` +
-            nodeProperties.get("title") +
-            `</b></p>`;
-        if (nodeProperties.has("name"))
-          htmlStr +=
-            `<p style="font-size:25px;"><b>` +
-            nodeProperties.get("name") +
-            `</b></p>`;
-
-        // node info
-        for (var [key, value] of nodeInfo) {
-          // console.log(key);
-          if (key != "properties") {
-            htmlStr += `<p><b>` + key + `: </b>` + value + `</p>`;
-          }
-        }
-
-        // properties info
-        htmlStr += `<p><b>properties: </b></p>`;
-        // title和name先行
-        if (nodeProperties.has("title"))
-          htmlStr +=
-            `<p style="margin-left: 25px;"><b>title: </b>` +
-            nodeProperties.get("title") +
-            `</p>`;
-        if (nodeProperties.has("name"))
-          htmlStr +=
-            `<p style="margin-left: 25px;"><b>name: </b>` +
-            nodeProperties.get("name") +
-            `</p>`;
-
-        for (var [key, value] of nodeProperties) {
-          if (key != "title" && key != "name")
-            htmlStr +=
-              `<p style="margin-left: 25px;"><b>` +
-              key +
-              `: </b>` +
-              value +
-              `</p>`;
-        }
-
-        // show data
-        var panel = document.getElementById("info-panel");
-        panel.innerHTML =
-          `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
-          htmlStr;
-        openInfoPanel();
-      }
+      infoPanel.innerHTML =
+        getCloseLink() + getNodeHtmlStr(nodeInfo, nodeProperties);
+      openInfoPanel();
     };
+  }
+
+  function getNodeHtmlStr(nodeInfo, nodeProperties) {
+    var htmlStr = "";
+
+    // title
+    if (nodeProperties.has("title"))
+      htmlStr += getPanelTitle(nodeProperties.get("title"));
+    if (nodeProperties.has("name"))
+      htmlStr += getPanelTitle(nodeProperties.get("name"));
+
+    // node info
+    for (var [key, value] of nodeInfo)
+      if (key != "properties") htmlStr += getParagraph(false, key, value);
+
+    // node properties
+    htmlStr += getParagraph(false, "properties", "");
+
+    for (var [key, value] of nodeProperties)
+      htmlStr += getParagraph(true, key, value);
+
+    return htmlStr;
   }
 
   function linkClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
     // 清除上次的选中效果
-    node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
-    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
-    link.attr("stroke", nodeStroke);
-    link.attr("stroke-width", linkStrokeWidth);
+    clearHighlight(nodeStroke, linkStrokeWidth);
 
-    // 选中效果：黑色，变粗
     d3.select(this)
       .transition()
       .attr("stroke", "black")
@@ -283,45 +231,53 @@ export const forceGraph = (
     req.send(formData);
 
     req.onreadystatechange = function () {
-      if (req.readyState == 4 && req.status == 200) {
-        //  response
-        var json = req.responseText;
+      if (!(req.readyState == 4 && req.status == 200)) return;
 
-        var linkInfo = JsonStrToMap(json);
-        var linkProperties = ObjToMap(linkInfo.get("properties"));
+      var json = req.responseText;
+      var linkInfo = JsonStrToMap(json);
+      var linkProperties = ObjToMap(linkInfo.get("properties"));
 
-        // console.log(linkInfo);
-
-        var htmlStr = "";
-        htmlStr +=
-          `<p style="font-size:25px;"><b>` + linkInfo.get("type") + `</b></p>`;
-
-        for (var [key, value] of linkInfo) {
-          // console.log(key);
-          if (key != "properties" && key != "type") {
-            htmlStr += `<p><b>` + key + `: </b>` + value + `</p>`;
-          }
-        }
-
-        htmlStr += `<p><b>properties: </b></p>`;
-
-        for (var [key, value] of linkProperties) {
-          htmlStr +=
-            `<p style="margin-left: 25px;"><b>` +
-            key +
-            `: </b>` +
-            value +
-            `</p>`;
-        }
-
-        // show data
-        var panel = document.getElementById("info-panel");
-        panel.innerHTML =
-          `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>` +
-          htmlStr;
-        openInfoPanel();
-      }
+      infoPanel.innerHTML =
+        getCloseLink() + getLinkHtmlStr(linkInfo, linkProperties);
+      openInfoPanel();
     };
+  }
+
+  function getLinkHtmlStr(linkInfo, linkProperties) {
+    var htmlStr = "";
+    htmlStr += getPanelTitle(linkInfo.get("type"));
+
+    for (var [key, value] of linkInfo)
+      if (key != "properties") htmlStr += getParagraph(false, key, value);
+
+    htmlStr += getParagraph(false, "properties", "");
+    for (var [key, value] of linkProperties)
+      htmlStr += getParagraph(true, key, value);
+    return htmlStr;
+  }
+
+  // 返回blk: name: zaq
+  function getParagraph(indent, key, value) {
+    if (indent)
+      return (
+        `<p style="margin-left: 25px;"><b>` + key + `: </b>` + value + `</p>`
+      );
+    return `<p><b>` + key + `: </b>` + value + `</p>`;
+  }
+
+  function getPanelTitle(title) {
+    return `<p style="font-size:25px;"><b>` + title + `</b></p>`;
+  }
+
+  function getCloseLink() {
+    return `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>`;
+  }
+
+  function clearHighlight(nodeStroke, linkStrokeWidth) {
+    node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
+    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
+    link.attr("stroke", nodeStroke);
+    link.attr("stroke-width", linkStrokeWidth);
   }
 
   function ObjToMap(obj) {
