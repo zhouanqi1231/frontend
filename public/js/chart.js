@@ -165,7 +165,7 @@ export const forceGraph = (
 
     d3.select(this)
       .transition()
-      .attr("fill", "black")
+      .attr("stroke-width", "3px")
       .attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 7);
 
     // 向后端发请求 表单传参
@@ -275,6 +275,7 @@ export const forceGraph = (
 
   function clearHighlight(nodeStroke, linkStrokeWidth) {
     node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
+    node.attr("stroke-width", "1px");
     node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
     link.attr("stroke", nodeStroke);
     link.attr("stroke-width", linkStrokeWidth);
