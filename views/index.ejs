@@ -1,20 +1,21 @@
-<html>
+<html lang="es">
 
 <head>
   <meta charset='utf-8'>
   <script src='js/d3.min.js'></script>
   <link rel='stylesheet' type='text/css' href='css/style.css'>
+  <title>graph database page</title>
 </head>
 
-<body link="white">
+<body>
   <!-- 详细信息面板 -->
   <div id="info-panel" class="info-panel">
-    <p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>
+    <p style="text-align: right;"><a href="javascript:void(0)" onclick="closeInfoPanel()">X</a></p>
   </div>
 
   <!-- 输入查询 -->
   <div id="input-panel" class="input-panel">
-    <input type="text" id="input-query" name="input-query" class="input-query" onkeydown="return input_nl_query(event)">
+    <label for="input-query"></label><input type="text" id="input-query" name="input-query" class="input-query" onkeydown="return input_nl_query(event)">
   </div>
 
   <!-- 展示查询结果 -->
@@ -33,11 +34,11 @@
 
   function input_nl_query(e) {
     // 回车触发事件
-    if (e.keyCode != 13) {
+    if (e.keyCode !== 13) {
       return;
     }
 
-    var query_str = document.getElementById("input-query").value;
+    let query_str = document.getElementById("input-query").value;
 
     let formData = new FormData();
     formData.append("query_str", query_str);
@@ -49,22 +50,22 @@
     req.send(formData);
 
     req.onreadystatechange = function() {
-      if (req.readyState == 4 && req.status == 200) {
+      if (req.readyState === 4 && req.status === 200) {
         //  response
         // 按理说应该是返回高亮的node和link列表
-        var json = req.responseText;
+        const json = req.responseText;
 
-        resp = JsonStrToMap(json);
-        query_results = resp.get("query_results");
+        const resp = JsonStrToMap(json);
+        const query_results = resp.get("query_results");
         query_results.forEach(result => {
           query_str = result["query_str"];
-          nodes = result["query_records"]["nodes"];
-          links = result["query_records"]["links"];
+          const nodes = result["query_records"]["nodes"];
+          const links = result["query_records"]["links"];
           console.log(query_str);
           console.log(nodes);
           nodes.forEach(nodeId => {
             console.log(nodeId);
-            var node = document.getElementById("node-" + nodeId)
+            const node = document.getElementById("node-" + nodeId);
             d3.select(node)
               .transition()
               .attr("fill", "black")
@@ -72,7 +73,7 @@
                 index: i
               }) => 20);
             console.log(node);
-          })
+          });
           console.log(links);
         });
 
@@ -83,7 +84,7 @@
   }
 
   function ObjToMap(obj) {
-    var map = new Map();
+    const map = new Map();
     for (let key in obj) {
       map.set(key, obj[key]);
     }

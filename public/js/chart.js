@@ -42,26 +42,24 @@ export const forceGraph = (
     value !== null && typeof value === "object" ? value.valueOf() : value;
 
   // Compute values.
-  const NODEID = d3.map(nodes, nodeId).map(intern);
+  const NODE_ID = d3.map(nodes, nodeId).map(intern);
   const NODEGROUP =
     nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
 
-  const LINKID = d3.map(links, linkId).map(intern);
-  const LINKSOURCE = d3.map(links, linkSource).map(intern);
-  const LINKTARGET = d3.map(links, linkTarget).map(intern);
-  const LINKSTROKE =
-    typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
-  const NODERADIUS =
+  const LINK_ID = d3.map(links, linkId).map(intern);
+  const LINK_SOURCE = d3.map(links, linkSource).map(intern);
+  const LINK_TARGET = d3.map(links, linkTarget).map(intern);
+  const NODE_RADIUS =
     typeof nodeRadius !== "function" ? null : d3.map(nodes, nodeRadius);
 
   // Replace the input nodes and links with mutable objects for the simulation.
   nodes = d3.map(nodes, (_, i) => ({
-    id: NODEID[i],
+    id: NODE_ID[i],
   }));
   links = d3.map(links, (_, i) => ({
-    source: LINKSOURCE[i],
-    target: LINKTARGET[i],
-    id: LINKID[i],
+    source: LINK_SOURCE[i],
+    target: LINK_TARGET[i],
+    id: LINK_ID[i],
   }));
 
   // Compute default domains.
@@ -110,7 +108,7 @@ export const forceGraph = (
     .forceSimulation(nodes)
     .force(
       "link",
-      d3.forceLink(links).id(({ index: i }) => NODEID[i])
+      d3.forceLink(links).id(({ index: i }) => NODE_ID[i])
     )
     .force("charge", forceNode)
     .force("center", d3.forceCenter())
@@ -124,7 +122,7 @@ export const forceGraph = (
     });
 
   const drag = (simulation) => {
-    const dragstarted = (event) => {
+    const dragStarted = (event) => {
       if (!event.active) simulation.alphaTarget(0.3).restart();
       event.subject.fx = event.subject.x;
       event.subject.fy = event.subject.y;
@@ -135,7 +133,7 @@ export const forceGraph = (
       event.subject.fy = event.y;
     };
 
-    const dragended = (event) => {
+    const dragEnded = (event) => {
       if (!event.active) simulation.alphaTarget(0);
       event.subject.fx = null;
       event.subject.fy = null;
@@ -143,16 +141,16 @@ export const forceGraph = (
 
     return d3
       .drag()
-      .on("start", dragstarted)
+      .on("start", dragStarted)
       .on("drag", dragged)
-      .on("end", dragended);
+      .on("end", dragEnded);
   };
 
   node.call(drag(simulation));
 
   if (NODEGROUP) node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
-  if (NODERADIUS)
-    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
+  if (NODE_RADIUS)
+    node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
 
   svg.selectAll("circle").on("click", nodeClicked);
   svg.selectAll("line").on("click", linkClicked);
@@ -166,7 +164,7 @@ export const forceGraph = (
     d3.select(this)
       .transition()
       .attr("stroke-width", "3px")
-      .attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 7);
+      .attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 7);
 
     // 向后端发请求 表单传参
     let formData = new FormData();
@@ -177,11 +175,11 @@ export const forceGraph = (
     req.send(formData);
 
     req.onreadystatechange = function () {
-      if (!(req.readyState == 4 && req.status == 200)) return;
+      if (!(req.readyState === 4 && req.status === 200)) return;
 
-      var json = req.responseText;
-      var nodeInfo = JsonStrToMap(json);
-      var nodeProperties = ObjToMap(nodeInfo.get("properties"));
+      const json = req.responseText;
+      const nodeInfo = JsonStrToMap(json);
+      const nodeProperties = ObjToMap(nodeInfo.get("properties"));
 
       infoPanel.innerHTML =
         getCloseLink() + getNodeHtmlStr(nodeInfo, nodeProperties);
@@ -190,7 +188,7 @@ export const forceGraph = (
   }
 
   function getNodeHtmlStr(nodeInfo, nodeProperties) {
-    var htmlStr = "";
+    let htmlStr = "";
 
     // title
     if (nodeProperties.has("title"))
@@ -199,13 +197,13 @@ export const forceGraph = (
       htmlStr += getPanelTitle(nodeProperties.get("name"));
 
     // node info
-    for (var [key, value] of nodeInfo)
-      if (key != "properties") htmlStr += getParagraph(false, key, value);
+    for (const [key, value] of nodeInfo)
+      if (key !== "properties") htmlStr += getParagraph(false, key, value);
 
     // node properties
     htmlStr += getParagraph(false, "properties", "");
 
-    for (var [key, value] of nodeProperties)
+    for (const [key, value] of nodeProperties)
       htmlStr += getParagraph(true, key, value);
 
     return htmlStr;
@@ -231,11 +229,11 @@ export const forceGraph = (
     req.send(formData);
 
     req.onreadystatechange = function () {
-      if (!(req.readyState == 4 && req.status == 200)) return;
+      if (!(req.readyState === 4 && req.status === 200)) return;
 
-      var json = req.responseText;
-      var linkInfo = JsonStrToMap(json);
-      var linkProperties = ObjToMap(linkInfo.get("properties"));
+      const json = req.responseText;
+      const linkInfo = JsonStrToMap(json);
+      const linkProperties = ObjToMap(linkInfo.get("properties"));
 
       infoPanel.innerHTML =
         getCloseLink() + getLinkHtmlStr(linkInfo, linkProperties);
@@ -244,14 +242,14 @@ export const forceGraph = (
   }
 
   function getLinkHtmlStr(linkInfo, linkProperties) {
-    var htmlStr = "";
+    let htmlStr = "";
     htmlStr += getPanelTitle(linkInfo.get("type"));
 
-    for (var [key, value] of linkInfo)
-      if (key != "properties") htmlStr += getParagraph(false, key, value);
+    for (const [key, value] of linkInfo)
+      if (key !== "properties") htmlStr += getParagraph(false, key, value);
 
     htmlStr += getParagraph(false, "properties", "");
-    for (var [key, value] of linkProperties)
+    for (const [key, value] of linkProperties)
       htmlStr += getParagraph(true, key, value);
     return htmlStr;
   }
@@ -270,19 +268,19 @@ export const forceGraph = (
   }
 
   function getCloseLink() {
-    return `<p align="right"><a href="javascript:void(0)" onclick="closeInfoPanel()" color="#fff">X</a></p>`;
+    return `<p style="text-align: right;"><a href="javascript:void(0)" onclick="closeInfoPanel()">X</a></p>`;
   }
 
   function clearHighlight(nodeStroke, linkStrokeWidth) {
-    node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
+    // node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
     node.attr("stroke-width", "1px");
-    node.attr("r", ({ index: i }) => Math.sqrt(NODERADIUS[i]) + 3);
+    node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
     link.attr("stroke", nodeStroke);
     link.attr("stroke-width", linkStrokeWidth);
   }
 
   function ObjToMap(obj) {
-    var map = new Map();
+    const map = new Map();
     for (let key in obj) {
       map.set(key, obj[key]);
     }
