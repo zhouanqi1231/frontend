@@ -1,27 +1,25 @@
 export const forceGraph = (
   {
-    nodes, // an iterable of node objects (typically [{id}, …])
-    links, // an iterable of link objects (typically [{source, target}, …])
+    nodes, // [{id}, …]
+    links, // [{source, target}, …]
   },
   {
-    infoPanel,
+    infoPanel, // infoPanel, used when elements clicked
     svgId = "force-graph",
-    nodeId = (d) => d.id, // given d in nodes, returns a unique identifier (string)
-    nodeGroup, // given d in nodes, returns an (ordinal) value for color
-    nodeGroups, // an array of ordinal values representing the node groups
-    nodeFill = "currentColor", // node stroke fill (if not using a group color encoding)
-    nodeStroke = "#fff", // node stroke color
-    nodeStrokeWidth = 1.5, // node stroke width, in pixels
-    nodeStrokeOpacity = 1, // node stroke opacity
-    nodeRadius = 5, // node radius, in pixels
-    nodeStrength,
-    linkId = (d) => d.id,
-    linkSource = ({ source }) => source, // given d in links, returns a node identifier string
-    linkTarget = ({ target }) => target, // given d in links, returns a node identifier string
-    linkStroke = "#999", // link stroke color
-    linkStrokeOpacity = 0.6, // link stroke opacity
-    linkStrokeWidth = 4, // given d in links, returns a stroke width in pixels
-    linkStrokeLinecap = "round", // link stroke linecap
+    nodeId = (d) => d.node_id,
+    nodeGroup = (d) => d.label,
+    nodeStroke = "white",
+    nodeStrokeWidth = 1.5,
+    nodeStrokeOpacity = 1,
+    nodeRadius = (d) => d.value,
+    nodeStrength = -18,
+    linkId = (d) => d.relationship_id,
+    linkSource = ({ source }) => source,
+    linkTarget = ({ target }) => target,
+    linkStroke = "#999",
+    linkStrokeOpacity = 0.6,
+    linkStrokeWidth = 4,
+    linkStrokeLinecap = "round", // means "(-------)"
     colors = [
       "#2b851c",
       "#61b628",
@@ -34,25 +32,19 @@ export const forceGraph = (
       "#ff55b6",
       "#abe758",
     ],
-    width, // w&h for graph
+    width, // w&h for the graph
     height,
   } = {}
 ) => {
-  const intern = (value) =>
-    value !== null && typeof value === "object" ? value.valueOf() : value;
+  const NODE_ID = d3.map(nodes, nodeId);
+  const NODE_RADIUS = d3.map(nodes, nodeRadius);
+  const NODE_GROUP = d3.map(nodes, nodeGroup);
+  const color = d3.scaleOrdinal(d3.sort(NODE_GROUP), colors); // label -> color
 
-  // Compute values.
-  const NODE_ID = d3.map(nodes, nodeId).map(intern);
-  const NODEGROUP =
-    nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
+  const LINK_ID = d3.map(links, linkId);
+  const LINK_SOURCE = d3.map(links, linkSource);
+  const LINK_TARGET = d3.map(links, linkTarget);
 
-  const LINK_ID = d3.map(links, linkId).map(intern);
-  const LINK_SOURCE = d3.map(links, linkSource).map(intern);
-  const LINK_TARGET = d3.map(links, linkTarget).map(intern);
-  const NODE_RADIUS =
-    typeof nodeRadius !== "function" ? null : d3.map(nodes, nodeRadius);
-
-  // Replace the input nodes and links with mutable objects for the simulation.
   nodes = d3.map(nodes, (_, i) => ({
     id: NODE_ID[i],
   }));
@@ -62,15 +54,8 @@ export const forceGraph = (
     id: LINK_ID[i],
   }));
 
-  // Compute default domains.
-  if (NODEGROUP && nodeGroups === undefined) nodeGroups = d3.sort(NODEGROUP);
-
-  // Construct the scales.
-  const color = nodeGroup == null ? null : d3.scaleOrdinal(nodeGroups, colors);
-
-  // node之间的力
-  const forceNode = d3.forceManyBody();
-  if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
+  const forceNode = d3.forceManyBody().strength(nodeStrength);
+  const forceLink = d3.forceLink(links).id(({ index: i }) => NODE_ID[i]);
 
   const svg = d3
     .create("svg")
@@ -82,34 +67,30 @@ export const forceGraph = (
 
   const link = svg
     .append("g")
-    .attr("stroke", typeof linkStroke !== "function" ? linkStroke : null)
+    .attr("stroke", linkStroke)
     .attr("stroke-opacity", linkStrokeOpacity)
     .attr("stroke-width", linkStrokeWidth)
     .attr("stroke-linecap", linkStrokeLinecap)
     .selectAll("line")
     .data(links)
     .join("line")
-    .attr("id", (d) => "link-" + d.id);
+    .attr("id", (d) => "link-" + d.id) // so can be easily found later
+    .on("click", linkClicked);
 
   const node = svg
     .append("g")
-    .attr("fill", nodeFill)
     .attr("stroke", nodeStroke)
     .attr("stroke-opacity", nodeStrokeOpacity)
     .attr("stroke-width", nodeStrokeWidth)
     .selectAll("circle")
     .data(nodes)
     .join("circle")
-    .attr("r", typeof nodeRadius !== "function" ? nodeRadius : null)
-    .attr("id", (d) => "node-" + d.id)
-    .attr("original-fill", (d) => "node-" + d.id);
+    .attr("id", (d) => "node-" + d.id) // so can be easily found later
+    .on("click", nodeClicked);
 
   const simulation = d3
     .forceSimulation(nodes)
-    .force(
-      "link",
-      d3.forceLink(links).id(({ index: i }) => NODE_ID[i])
-    )
+    .force("link", forceLink)
     .force("charge", forceNode)
     .force("center", d3.forceCenter())
     .on("tick", () => {
@@ -120,6 +101,12 @@ export const forceGraph = (
         .attr("y2", (d) => d.target.y);
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     });
+
+  // why after simulation?
+  node.attr("fill", ({ index: i }) => color(NODE_GROUP[i]));
+  node.attr("original-fill", ({ index: i }) => color(NODE_GROUP[i]));
+  node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
+  node.attr("original-r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
 
   const drag = (simulation) => {
     const dragStarted = (event) => {
@@ -148,25 +135,18 @@ export const forceGraph = (
 
   node.call(drag(simulation));
 
-  if (NODEGROUP) node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
-  if (NODE_RADIUS)
-    node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
-
-  svg.selectAll("circle").on("click", nodeClicked);
-  svg.selectAll("line").on("click", linkClicked);
-
   function nodeClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
-    // 清除上次的选中效果，添加本次选中效果
-    clearHighlight(nodeStroke, linkStrokeWidth);
+    // clear highlight left
+    clearSelectedHighlight(nodeStroke, linkStrokeWidth);
 
     d3.select(this)
       .transition()
       .attr("stroke-width", "3px")
       .attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 7);
 
-    // 向后端发请求 表单传参
+    // get node info from backend
     let formData = new FormData();
     formData.append("node_id", this.id.substring(5, this.id.length));
 
@@ -177,12 +157,12 @@ export const forceGraph = (
     req.onreadystatechange = function () {
       if (!(req.readyState === 4 && req.status === 200)) return;
 
-      const json = req.responseText;
-      const nodeInfo = JsonStrToMap(json);
+      const nodeInfo = JsonStrToMap(req.responseText);
       const nodeProperties = ObjToMap(nodeInfo.get("properties"));
 
       infoPanel.innerHTML =
         getCloseLink() + getNodeHtmlStr(nodeInfo, nodeProperties);
+
       openInfoPanel();
     };
   }
@@ -193,16 +173,15 @@ export const forceGraph = (
     // title
     if (nodeProperties.has("title"))
       htmlStr += getPanelTitle(nodeProperties.get("title"));
-    if (nodeProperties.has("name"))
+    else if (nodeProperties.has("name"))
       htmlStr += getPanelTitle(nodeProperties.get("name"));
 
     // node info
     for (const [key, value] of nodeInfo)
       if (key !== "properties") htmlStr += getParagraph(false, key, value);
 
-    // node properties
+    // property info
     htmlStr += getParagraph(false, "properties", "");
-
     for (const [key, value] of nodeProperties)
       htmlStr += getParagraph(true, key, value);
 
@@ -212,15 +191,15 @@ export const forceGraph = (
   function linkClicked(event, d, nodeStroke, linkStrokeWidth) {
     if (event.defaultPrevented) return; // dragged
 
-    // 清除上次的选中效果
-    clearHighlight(nodeStroke, linkStrokeWidth);
+    // clear highlight left
+    clearSelectedHighlight(nodeStroke, linkStrokeWidth);
 
     d3.select(this)
       .transition()
       .attr("stroke", "black")
       .attr("stroke-width", 8);
 
-    // 向后端发请求
+    // get link info from backend
     let formData = new FormData();
     formData.append("relationship_id", this.id.substring(5, this.id.length));
 
@@ -231,30 +210,34 @@ export const forceGraph = (
     req.onreadystatechange = function () {
       if (!(req.readyState === 4 && req.status === 200)) return;
 
-      const json = req.responseText;
-      const linkInfo = JsonStrToMap(json);
+      const linkInfo = JsonStrToMap(req.responseText);
       const linkProperties = ObjToMap(linkInfo.get("properties"));
 
       infoPanel.innerHTML =
         getCloseLink() + getLinkHtmlStr(linkInfo, linkProperties);
+
       openInfoPanel();
     };
   }
 
   function getLinkHtmlStr(linkInfo, linkProperties) {
     let htmlStr = "";
+
+    // title
     htmlStr += getPanelTitle(linkInfo.get("type"));
 
+    // relationship info
     for (const [key, value] of linkInfo)
       if (key !== "properties") htmlStr += getParagraph(false, key, value);
 
+    // property info
     htmlStr += getParagraph(false, "properties", "");
     for (const [key, value] of linkProperties)
       htmlStr += getParagraph(true, key, value);
     return htmlStr;
   }
 
-  // 返回blk: name: zaq
+  // "name: zaq"
   function getParagraph(indent, key, value) {
     if (indent)
       return (
@@ -271,9 +254,8 @@ export const forceGraph = (
     return `<p style="text-align: right;"><a href="javascript:void(0)" onclick="closeInfoPanel()">X</a></p>`;
   }
 
-  function clearHighlight(nodeStroke, linkStrokeWidth) {
-    // node.attr("fill", ({ index: i }) => color(NODEGROUP[i]));
-    node.attr("stroke-width", "1px");
+  function clearSelectedHighlight(nodeStroke, linkStrokeWidth) {
+    node.attr("stroke-width", "1.5px");
     node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
     link.attr("stroke", nodeStroke);
     link.attr("stroke-width", linkStrokeWidth);
@@ -281,14 +263,16 @@ export const forceGraph = (
 
   function ObjToMap(obj) {
     const map = new Map();
-    for (let key in obj) {
-      map.set(key, obj[key]);
-    }
+    for (let key in obj) map.set(key, obj[key]);
     return map;
   }
 
   function JsonStrToMap(str) {
     return ObjToMap(JSON.parse(str));
+  }
+
+  function p(a) {
+    console.log(a);
   }
 
   return Object.assign(svg.node(), {

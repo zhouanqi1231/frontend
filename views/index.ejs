@@ -8,17 +8,17 @@
 </head>
 
 <body>
-  <!-- 详细信息面板 -->
+  <!-- info-panel -->
   <div id="info-panel" class="info-panel">
     <p style="text-align: right;"><a href="javascript:void(0)" onclick="closeInfoPanel()">X</a></p>
   </div>
 
-  <!-- 输入查询 -->
+  <!-- input-query -->
   <div id="input-panel" class="input-panel">
     <label for="input-query"></label><input type="text" id="input-query" name="input-query" class="input-query" onkeydown="return input_nl_query(event)">
   </div>
 
-  <!-- 展示查询结果 -->
+  <!-- query-result -->
   <div id="query-result-panel" class="query-result-panel"></div>
   <script src='js/main.js' type='module'></script>
 </body>
@@ -33,10 +33,8 @@
   }
 
   function input_nl_query(e) {
-    // 回车触发事件
-    if (e.keyCode !== 13) {
-      return;
-    }
+    // when `enter` clicked
+    if (e.keyCode !== 13) return;
 
     let query_str = document.getElementById("input-query").value;
 
@@ -44,7 +42,7 @@
     formData.append("query_str", query_str);
     console.log(query_str);
 
-    // 请求后端接口
+    // get resp from backend
     const req = new XMLHttpRequest();
     req.open("POST", "http://127.0.0.1:5000/nl_query", true);
     req.send(formData);
@@ -93,6 +91,10 @@
 
   function JsonStrToMap(str) {
     return ObjToMap(JSON.parse(str));
+  }
+
+  function p(a) {
+    console.log(a);
   }
 </script>
 
