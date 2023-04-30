@@ -42,7 +42,7 @@
     for (let i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       originalColor = node.getAttribute("original-fill");
-      node.setAttribute("fill", originalColor)
+      node.setAttribute("fill", originalColor);
     }
     for (let i = 0; i < links.length; i++) {
       var link = links[i];
@@ -54,14 +54,14 @@
   function setNodeLinkColor(nodeIds, linkIds) {
     var nodes = document.getElementsByTagName("circle");
     var links = document.getElementsByTagName("line");
-    nodeIds.forEach(id => {
+    nodeIds.forEach((id) => {
       var node = nodes[id];
-      node.setAttribute("fill", "red")
-    })
-    linkIds.forEach(id => {
+      node.setAttribute("fill", "red");
+    });
+    linkIds.forEach((id) => {
       var link = links[id];
       link.setAttribute("stroke", "red");
-    })
+    });
   }
 
   function input_nl_query(e) {
@@ -93,38 +93,38 @@
       clearNodeLinkColor();
 
       var i = 1;
-      query_results.forEach(result => {
-        console.log(result)
+      query_results.forEach((result) => {
+        console.log(result);
         query_str = result["query_str"];
-        addATab(query_str, i)
+        addATab(query_str, i);
         const nodes = result["query_records"]["nodes"];
         const links = result["query_records"]["links"];
         i++;
       });
       const nodes = query_results[0]["query_records"]["nodes"];
       const links = query_results[0]["query_records"]["links"];
-      setNodeLinkColor(nodes, links)
+      setNodeLinkColor(nodes, links);
     };
   }
 
   function addATab(txt, index, nodes, links) {
     var tabs = document.getElementById("tab-wrapper");
-    var tabId = index
+    var tabId = index;
 
     var input = document.createElement("input");
     input.type = "radio";
     input.name = "tab-radio";
     input.id = "tab-radio-" + tabId;
-    input.setAttribute("class", "tab-radio")
+    input.setAttribute("class", "tab-radio");
 
     var label = document.createElement("label");
-    label.setAttribute("for", "tab-radio-" + tabId)
-    label.setAttribute("class", "tab-handler tab-handler-" + tabId)
-    label.innerHTML = "" + tabId
+    label.setAttribute("for", "tab-radio-" + tabId);
+    label.setAttribute("class", "tab-handler tab-handler-" + tabId);
+    label.innerHTML = "" + tabId;
 
     var div = document.createElement("div");
-    div.setAttribute("class", "tab-content tab-content-" + tabId)
-    div.innerHTML = txt
+    div.setAttribute("class", "tab-content tab-content-" + tabId);
+    div.innerHTML = txt;
 
     tabs.appendChild(input);
     tabs.appendChild(label);
