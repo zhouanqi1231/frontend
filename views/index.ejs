@@ -19,8 +19,11 @@
   </div>
 
   <!-- query-result -->
-  <div id="query-result-panel" class="query-result-panel"></div>
+  <div id="query-result-panel" class="query-result-panel">
+    <div id="tab-wrapper" class="tab-wrapper"></div>
+  </div>
   <script src='js/main.js' type='module'></script>
+
 </body>
 
 <script>
@@ -48,37 +51,68 @@
     req.send(formData);
 
     req.onreadystatechange = function() {
-      if (req.readyState === 4 && req.status === 200) {
-        //  response
-        // 按理说应该是返回高亮的node和link列表
-        const json = req.responseText;
+      if (!(req.readyState === 4 && req.status === 200)) return;
+      const json = req.responseText;
 
-        const resp = JsonStrToMap(json);
-        const query_results = resp.get("query_results");
-        query_results.forEach(result => {
-          query_str = result["query_str"];
-          const nodes = result["query_records"]["nodes"];
-          const links = result["query_records"]["links"];
-          console.log(query_str);
-          console.log(nodes);
-          nodes.forEach(nodeId => {
-            console.log(nodeId);
-            const node = document.getElementById("node-" + nodeId);
-            d3.select(node)
-              .transition()
-              .attr("fill", "black")
-              .attr("r", ({
-                index: i
-              }) => 20);
-            console.log(node);
-          });
-          console.log(links);
-        });
+      const resp = JsonStrToMap(json);
+      const query_results = resp.get("query_results");
 
-        console.log(json);
-        console.log(resp);
-      }
+      // delete former results
+      removeFormerRes();
+
+      var i = 1;
+      query_results.forEach(result => {
+        console.log(result)
+        query_str = result["query_str"];
+        addATab(query_str, i)
+        const nodes = result["query_records"]["nodes"];
+        const links = result["query_records"]["links"];
+        // nodes.forEach(nodeId => {
+        //   console.log(nodeId);
+        //   const node = document.getElementById("node-" + nodeId);
+        //   d3.select(node)
+        //     .transition()
+        //     .attr("fill", "black")
+        //     .attr("r", ({
+        //       index: i
+        //     }) => 20);
+        // });
+        i++;
+      });
     };
+  }
+
+  function addATab(txt, index, nodes, links) {
+    var tabs = document.getElementById("tab-wrapper");
+    var tabId = index
+
+    var input = document.createElement("input");
+    input.type = "radio";
+    input.name = "tab-radio";
+    input.id = "tab-radio-" + tabId;
+    input.setAttribute("class", "tab-radio")
+
+    var label = document.createElement("label");
+    label.setAttribute("for", "tab-radio-" + tabId)
+    label.setAttribute("class", "tab-handler tab-handler-" + tabId)
+    label.innerHTML = "" + tabId
+
+    var div = document.createElement("div");
+    div.setAttribute("class", "tab-content tab-content-" + tabId)
+    div.innerHTML = txt
+
+    tabs.appendChild(input);
+    tabs.appendChild(label);
+    tabs.appendChild(div);
+  }
+
+  function removeFormerRes() {
+    var e = document.getElementById("tab-wrapper");
+    var child = e.lastElementChild;
+    while (child) {
+      e.removeChild(child);
+      child = e.lastElementChild;
+    }
   }
 
   function ObjToMap(obj) {
