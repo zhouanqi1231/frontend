@@ -99,19 +99,11 @@
         addATab(query_str, i)
         const nodes = result["query_records"]["nodes"];
         const links = result["query_records"]["links"];
-        setNodeLinkColor(nodes, links)
-        // nodes.forEach(nodeId => {
-        //   console.log(nodeId);
-        //   const node = document.getElementById("node-" + nodeId);
-        //   d3.select(node)
-        //     .transition()
-        //     .attr("fill", "black")
-        //     .attr("r", ({
-        //       index: i
-        //     }) => 20);
-        // });
         i++;
       });
+      const nodes = query_results[0]["query_records"]["nodes"];
+      const links = query_results[0]["query_records"]["links"];
+      setNodeLinkColor(nodes, links)
     };
   }
 
