@@ -35,6 +35,35 @@
     document.getElementById("info-panel").style.display = "none";
   }
 
+  // clear color of all nodes and links
+  function clearNodeLinkColor() {
+    var nodes = document.getElementsByTagName("circle");
+    var links = document.getElementsByTagName("line");
+    for (let i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      originalColor = node.getAttribute("original-fill");
+      node.setAttribute("fill", originalColor)
+    }
+    for (let i = 0; i < links.length; i++) {
+      var link = links[i];
+      link.setAttribute("stroke", "#999");
+    }
+  }
+
+  // set color to red for nodes and links in `ids`
+  function setNodeLinkColor(nodeIds, linkIds) {
+    var nodes = document.getElementsByTagName("circle");
+    var links = document.getElementsByTagName("line");
+    nodeIds.forEach(id => {
+      var node = nodes[id];
+      node.setAttribute("fill", "red")
+    })
+    linkIds.forEach(id => {
+      var link = links[id];
+      link.setAttribute("stroke", "red");
+    })
+  }
+
   function input_nl_query(e) {
     // when `enter` clicked
     if (e.keyCode !== 13) return;
@@ -60,6 +89,9 @@
       // delete former results
       removeFormerRes();
 
+      // delete former highlight
+      clearNodeLinkColor();
+
       var i = 1;
       query_results.forEach(result => {
         console.log(result)
@@ -67,6 +99,7 @@
         addATab(query_str, i)
         const nodes = result["query_records"]["nodes"];
         const links = result["query_records"]["links"];
+        setNodeLinkColor(nodes, links)
         // nodes.forEach(nodeId => {
         //   console.log(nodeId);
         //   const node = document.getElementById("node-" + nodeId);

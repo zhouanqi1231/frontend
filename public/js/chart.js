@@ -194,10 +194,7 @@ export const forceGraph = (
     // clear highlight left
     clearSelectedHighlight(nodeStroke, linkStrokeWidth);
 
-    d3.select(this)
-      .transition()
-      .attr("stroke", "black")
-      .attr("stroke-width", 8);
+    d3.select(this).transition().attr("stroke-width", 9);
 
     // get link info from backend
     let formData = new FormData();
@@ -257,7 +254,7 @@ export const forceGraph = (
   function clearSelectedHighlight(nodeStroke, linkStrokeWidth) {
     node.attr("stroke-width", "1.5px");
     node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
-    link.attr("stroke", nodeStroke);
+    // link.attr("stroke", nodeStroke);
     link.attr("stroke-width", linkStrokeWidth);
   }
 
