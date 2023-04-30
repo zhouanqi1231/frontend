@@ -27,6 +27,9 @@
 </body>
 
 <script>
+  var highlightedNodes = [1]
+  var highlightedLinks = [2]
+
   function openInfoPanel() {
     document.getElementById("info-panel").style.display = "block";
   }
@@ -52,6 +55,7 @@
 
   // set color to red for nodes and links in `ids`
   function setNodeLinkColor(nodeIds, linkIds) {
+    clearNodeLinkColor()
     var nodes = document.getElementsByTagName("circle");
     var links = document.getElementsByTagName("line");
     nodeIds.forEach((id) => {
@@ -92,24 +96,32 @@
       // delete former highlight
       clearNodeLinkColor();
 
+      // clear highlight list of result
+      highlightedNodes.length = 0
+      highlightedLinks.length = 0
+
       var i = 1;
       query_results.forEach((result) => {
-        console.log(result);
         query_str = result["query_str"];
-        addATab(query_str, i);
         const nodes = result["query_records"]["nodes"];
         const links = result["query_records"]["links"];
+        highlightedNodes.push(nodes);
+        highlightedLinks.push(links);
+
+        // addATab(query_str, i);
         i++;
       });
-      const nodes = query_results[0]["query_records"]["nodes"];
-      const links = query_results[0]["query_records"]["links"];
-      setNodeLinkColor(nodes, links);
+      for (let i = 0; i < highlightedNodes.length; i++) {
+        addATab(query_str, i)
+      }
+      console.log(highlightedNodes, highlightedLinks)
+      setNodeLinkColor(highlightedNodes[0], highlightedLinks[0]);
     };
   }
 
   function addATab(txt, index, nodes, links) {
     var tabs = document.getElementById("tab-wrapper");
-    var tabId = index;
+    var tabId = index + 1;
 
     var input = document.createElement("input");
     input.type = "radio";
@@ -121,6 +133,9 @@
     label.setAttribute("for", "tab-radio-" + tabId);
     label.setAttribute("class", "tab-handler tab-handler-" + tabId);
     label.innerHTML = "" + tabId;
+    label.onclick = function() {
+      setNodeLinkColor(highlightedNodes[index], highlightedLinks[index])
+    }
 
     var div = document.createElement("div");
     div.setAttribute("class", "tab-content tab-content-" + tabId);
