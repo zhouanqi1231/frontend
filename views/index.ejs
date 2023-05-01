@@ -27,8 +27,9 @@
 </body>
 
 <script>
-  var highlightedNodes = [1]
-  var highlightedLinks = [2]
+  var highlightedNodes = [];
+  var highlightedLinks = [];
+  var queryStrList = [];
 
   function openInfoPanel() {
     document.getElementById("info-panel").style.display = "block";
@@ -55,7 +56,7 @@
 
   // set color to red for nodes and links in `ids`
   function setNodeLinkColor(nodeIds, linkIds) {
-    clearNodeLinkColor()
+    clearNodeLinkColor();
     var nodes = document.getElementsByTagName("circle");
     var links = document.getElementsByTagName("line");
     nodeIds.forEach((id) => {
@@ -72,11 +73,11 @@
     // when `enter` clicked
     if (e.keyCode !== 13) return;
 
-    let query_str = document.getElementById("input-query").value;
+    let queryStr = document.getElementById("input-query").value;
 
     let formData = new FormData();
-    formData.append("query_str", query_str);
-    console.log(query_str);
+    formData.append("query_str", queryStr);
+    console.log(queryStr);
 
     // get resp from backend
     const req = new XMLHttpRequest();
@@ -88,7 +89,7 @@
       const json = req.responseText;
 
       const resp = JsonStrToMap(json);
-      const query_results = resp.get("query_results");
+      const queryResults = resp.get("query_results");
 
       // delete former results
       removeFormerRes();
@@ -97,24 +98,23 @@
       clearNodeLinkColor();
 
       // clear highlight list of result
-      highlightedNodes.length = 0
-      highlightedLinks.length = 0
+      highlightedNodes.length = 0;
+      highlightedLinks.length = 0;
 
       var i = 1;
-      query_results.forEach((result) => {
-        query_str = result["query_str"];
+      queryResults.forEach((result) => {
+        queryStr = result["query_str"];
         const nodes = result["query_records"]["nodes"];
         const links = result["query_records"]["links"];
         highlightedNodes.push(nodes);
         highlightedLinks.push(links);
-
-        // addATab(query_str, i);
+        queryStrList.push(queryStr);
         i++;
       });
       for (let i = 0; i < highlightedNodes.length; i++) {
-        addATab(query_str, i)
+        addATab(queryStrList[i], i);
       }
-      console.log(highlightedNodes, highlightedLinks)
+      console.log(highlightedNodes, highlightedLinks);
       setNodeLinkColor(highlightedNodes[0], highlightedLinks[0]);
     };
   }
@@ -134,8 +134,8 @@
     label.setAttribute("class", "tab-handler tab-handler-" + tabId);
     label.innerHTML = "" + tabId;
     label.onclick = function() {
-      setNodeLinkColor(highlightedNodes[index], highlightedLinks[index])
-    }
+      setNodeLinkColor(highlightedNodes[index], highlightedLinks[index]);
+    };
 
     var div = document.createElement("div");
     div.setAttribute("class", "tab-content tab-content-" + tabId);
