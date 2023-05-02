@@ -41,17 +41,12 @@
 
   // clear color of all nodes and links
   function clearNodeLinkColor() {
-    var nodes = document.getElementsByTagName("circle");
-    var links = document.getElementsByTagName("line");
-    for (let i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
-      originalColor = node.getAttribute("original-fill");
-      node.setAttribute("fill", originalColor);
-    }
-    for (let i = 0; i < links.length; i++) {
-      var link = links[i];
-      link.setAttribute("stroke", "#999");
-    }
+    const nodes = document.getElementsByTagName("circle");
+    const links = document.getElementsByTagName("line");
+    for (let i = 0; i < nodes.length; i++)
+      nodes[i].setAttribute("fill", nodes[i].getAttribute("original-fill"));
+    for (let i = 0; i < links.length; i++)
+      links[i].setAttribute("stroke", "#999");
   }
 
   // set color to red for nodes and links in `ids`
@@ -60,12 +55,10 @@
     var nodes = document.getElementsByTagName("circle");
     var links = document.getElementsByTagName("line");
     nodeIds.forEach((id) => {
-      var node = nodes[id];
-      node.setAttribute("fill", "red");
+      nodes[id].setAttribute("fill", "red");
     });
     linkIds.forEach((id) => {
-      var link = links[id];
-      link.setAttribute("stroke", "red");
+      links[id].setAttribute("stroke", "red");
     });
   }
 
@@ -79,6 +72,11 @@
     formData.append("query_str", queryStr);
     console.log(queryStr);
 
+    // clear highlight list of result
+    highlightedNodes.length = 0;
+    highlightedLinks.length = 0;
+    queryStrList.length = 0;
+
     // get resp from backend
     const req = new XMLHttpRequest();
     req.open("POST", "http://127.0.0.1:5000/nl_query", true);
@@ -91,15 +89,8 @@
       const resp = JsonStrToMap(json);
       const queryResults = resp.get("query_results");
 
-      // delete former results
-      removeFormerRes();
-
-      // delete former highlight
-      clearNodeLinkColor();
-
-      // clear highlight list of result
-      highlightedNodes.length = 0;
-      highlightedLinks.length = 0;
+      removeFormerRes(); // delete former results (left panel
+      clearNodeLinkColor(); // delete former highlight
 
       queryResults.forEach((result) => {
         queryStr = result["query_str"];
@@ -109,25 +100,27 @@
         highlightedLinks.push(links);
         queryStrList.push(queryStr);
       });
-      for (let i = 0; i < highlightedNodes.length; i++) {
+
+      for (
+        let i = 0; i < highlightedNodes.length; i++ // add res tab (left panel
+      )
         addATab(queryStrList[i], i);
-      }
-      console.log(highlightedNodes, highlightedLinks);
-      setNodeLinkColor(highlightedNodes[0], highlightedLinks[0]);
+
+      setNodeLinkColor(highlightedNodes[0], highlightedLinks[0]); // set node/link color
     };
   }
 
   function addATab(txt, index, nodes, links) {
-    var tabs = document.getElementById("tab-wrapper");
-    var tabId = index + 1;
+    const tabs = document.getElementById("tab-wrapper");
+    const tabId = index + 1;
 
-    var input = document.createElement("input");
+    const input = document.createElement("input");
     input.type = "radio";
     input.name = "tab-radio";
     input.id = "tab-radio-" + tabId;
     input.setAttribute("class", "tab-radio");
 
-    var label = document.createElement("label");
+    const label = document.createElement("label");
     label.setAttribute("for", "tab-radio-" + tabId);
     label.setAttribute("class", "tab-handler tab-handler-" + tabId);
     label.innerHTML = "" + tabId;
@@ -135,7 +128,7 @@
       setNodeLinkColor(highlightedNodes[index], highlightedLinks[index]);
     };
 
-    var div = document.createElement("div");
+    const div = document.createElement("div");
     div.setAttribute("class", "tab-content tab-content-" + tabId);
     div.innerHTML = txt;
 
@@ -145,12 +138,11 @@
   }
 
   function removeFormerRes() {
-    var e = document.getElementById("tab-wrapper");
-    var child = e.lastElementChild;
-    while (child) {
-      e.removeChild(child);
-      child = e.lastElementChild;
-    }
+    document.getElementById("tab-wrapper").remove();
+    const div = document.createElement("div");
+    div.setAttribute("class", "tab-wrapper");
+    div.id = "tab-wrapper";
+    document.getElementById("query-result-panel").appendChild(div);
   }
 
   function ObjToMap(obj) {
