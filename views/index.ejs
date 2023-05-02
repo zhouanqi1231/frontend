@@ -20,6 +20,7 @@
 
   <!-- query-result -->
   <div id="query-result-panel" class="query-result-panel">
+    <p style="text-align: right;"><a href="javascript:void(0)" onclick="closeResPanel()">X</a></p>
     <div id="tab-wrapper" class="tab-wrapper"></div>
   </div>
   <script src='js/main.js' type='module'></script>
@@ -37,6 +38,14 @@
 
   function closeInfoPanel() {
     document.getElementById("info-panel").style.display = "none";
+  }
+
+  function openResPanel() {
+    document.getElementById("query-result-panel").style.display = "block";
+  }
+
+  function closeResPanel() {
+    document.getElementById("query-result-panel").style.display = "none";
   }
 
   // clear color of all nodes and links
@@ -107,6 +116,7 @@
         addATab(queryStrList[i], i);
 
       setNodeLinkColor(highlightedNodes[0], highlightedLinks[0]); // set node/link color
+      openResPanel();
     };
   }
 
