@@ -17,8 +17,8 @@ export const forceGraph = (
     linkSource = ({ source }) => source,
     linkTarget = ({ target }) => target,
     linkStroke = "#999",
-    linkStrokeOpacity = 0.6,
-    linkStrokeWidth = 4,
+    linkStrokeOpacity = 0.3,
+    linkStrokeWidth = 2,
     linkStrokeLinecap = "round", // means "(-------)"
     colors = [
       "#2b851c",
@@ -36,6 +36,7 @@ export const forceGraph = (
     height,
   } = {}
 ) => {
+  // 映射关系
   const NODE_ID = d3.map(nodes, nodeId);
   const NODE_RADIUS = d3.map(nodes, nodeRadius);
   const NODE_GROUP = d3.map(nodes, nodeGroup);
@@ -105,8 +106,8 @@ export const forceGraph = (
   // why after simulation?
   node.attr("fill", ({ index: i }) => color(NODE_GROUP[i]));
   node.attr("original-fill", ({ index: i }) => color(NODE_GROUP[i]));
-  node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
-  node.attr("original-r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
+  node.attr("r", ({ index: i }) => Math.log(NODE_RADIUS[i]) + 3);
+  node.attr("original-r", ({ index: i }) => Math.log(NODE_RADIUS[i]) + 3);
 
   const drag = (simulation) => {
     const dragStarted = (event) => {
@@ -144,7 +145,7 @@ export const forceGraph = (
     d3.select(this)
       .transition()
       .attr("stroke-width", "3px")
-      .attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 7);
+      .attr("r", ({ index: i }) => Math.log(NODE_RADIUS[i]) + 7);
 
     // get node info from backend
     let formData = new FormData();
@@ -194,7 +195,7 @@ export const forceGraph = (
     // clear highlight left
     clearSelectedHighlight(nodeStroke, linkStrokeWidth);
 
-    d3.select(this).transition().attr("stroke-width", 9);
+    d3.select(this).transition().attr("stroke-width", 4);
 
     // get link info from backend
     let formData = new FormData();
@@ -253,7 +254,7 @@ export const forceGraph = (
 
   function clearSelectedHighlight(nodeStroke, linkStrokeWidth) {
     node.attr("stroke-width", "1.5px");
-    node.attr("r", ({ index: i }) => Math.sqrt(NODE_RADIUS[i]) + 3);
+    node.attr("r", ({ index: i }) => Math.log(NODE_RADIUS[i]) + 3);
     // link.attr("stroke", nodeStroke);
     link.attr("stroke-width", linkStrokeWidth);
   }
